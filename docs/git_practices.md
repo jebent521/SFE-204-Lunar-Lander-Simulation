@@ -1,0 +1,37 @@
+# Git Practices
+
+## Commits, Pushing, and Pulling
+
+Do it how you normally do it. Commit to save your work. Have
+meaningful commit messages. Push up your changes periodically.
+Pull down from origin to avoid conflicts. Not too difficult.
+
+## Branching
+
+I'd like to use branching for this project to (hopefully) make 
+things a little cleaner. This isn't something I've used in any of
+my other school projects before, so that's why I'm taking the
+time to write this little doc for it.
+
+Basically how it works is there'll be a main branch which
+contains all the code we know works. Whenever you work on a new
+feature of the project, you create a branch off of main, make your
+changes, create a pull request, and once it's approved, merge it 
+back into main. This should reduce (though it won't eliminate)
+the number of merge conflicts we have to deal with.
+
+## I'll walk you through a basic example:
+
+Say I'm going to create a new api endpoint on our server that 
+allows us to calculate the current velocity of the lander. I would
+first create a branch. Note, you should be on branch main before
+creating a new branch.
+
+```bash
+git switch -c calculate-velocity-api
+```
+
+I make my changes as normal, working on the 
+`calculate-velocity-api` branch. Once I'm done, I create a pull 
+request, which asks everyone to look at the changes I made and
+sign off on them.
