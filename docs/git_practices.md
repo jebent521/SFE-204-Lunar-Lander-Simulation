@@ -27,6 +27,9 @@ allows us to calculate the current velocity of the lander. I would
 first create a branch. Note, you should be on branch main before
 creating a new branch.
 
+You can create a new branch directly on GitHub or with the
+following command:
+
 ```bash
 git switch -c calculate-velocity-api
 ```
@@ -34,4 +37,7 @@ git switch -c calculate-velocity-api
 I make my changes as normal, working on the 
 `calculate-velocity-api` branch. Once I'm done, I create a pull 
 request, which asks everyone to look at the changes I made and
-sign off on them.
+sign off on them. Once everyone agrees that it's ready to merge,
+there will be an option to do so right on GitHub.
+
+The easiest way to create a pull request is through GitHub.
