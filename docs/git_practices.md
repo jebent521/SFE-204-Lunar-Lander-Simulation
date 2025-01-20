@@ -20,6 +20,13 @@ changes, create a pull request, and once it's approved, merge it
 back into main. This should reduce (though it won't eliminate)
 the number of merge conflicts we have to deal with.
 
+When you merge your branch, prefer sqaushing or rebasing. Merge
+commits are messy and typically add many unhelpful intermediate
+commits being added to main - squashing combines everything
+into one, and makes the git blame easier to read. Rebasing is
+more complex than a merge or squash, but may be clearer to read
+than a squash for extremely large PRs.
+
 ## I'll walk you through a basic example:
 
 Say I'm going to create a new api endpoint on our server that 
