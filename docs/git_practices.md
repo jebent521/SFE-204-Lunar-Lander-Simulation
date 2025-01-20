@@ -25,7 +25,8 @@ commits are messy and typically add many unhelpful intermediate
 commits being added to main - squashing combines everything
 into one, and makes the git blame easier to read. Rebasing is
 more complex than a merge or squash, but may be clearer to read
-than a squash for extremely large PRs.
+than a squash for extremely large PRs. This is most easily done
+via GitHub.
 
 ## I'll walk you through a basic example:
 
