@@ -1,12 +1,16 @@
-import { createServer } from 'http';
+const WebSocket = require('ws');
 
-const server = createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World!\n');
-});
+const wss = new WebSocket.Server({ port: 8080 });
 
-const PORT = 3000;
+wss.on('connection', function connection(ws) {
+  console.log('Client connected');
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+  ws.on('message', function incoming(message) {
+      console.log('Received: %s', message);
+      ws.send(`${message}`);
+  });
+
+  ws.on('close', function () {
+      console.log('Client disconnected');
+  });
 });
