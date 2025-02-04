@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Client</title>
+    <script src="script.js" type="text/javascript"></script>
     <style>
         h1 {
             color: green;
@@ -18,14 +19,10 @@
 
 <body>
     <h1>WebSocket Example</h1>
-    <div class="container">
-        <label>Send Message to Server:</label> <br><br>
-        <input type="text" id="messageInput">
-        <button onclick="sendMessage()">Send</button>
-        <div id="output"></div>
-    </div>
+    <p>Connection Status: <div id="status"></div></p>
+    <p>Control the thruster by the spacebar.</p>
+    <div id="output"></div>
 
-    <script src="script.js" type="text/javascript"></script>
 </body>
 
 </html>
