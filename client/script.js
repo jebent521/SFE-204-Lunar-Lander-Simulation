@@ -24,7 +24,7 @@ window.onload = function () {
 socket.onopen = function (event) {
   // Alert the user that they are
   // connected to the WebSocket server
-  document.getElementById("status").innerHTML = "<p>connected</p>";
+  document.getElementById("status").innerHTML = "Connection status: connected";
   alert("You are Connected to WebSocket Server");
 };
 
@@ -43,6 +43,6 @@ socket.onmessage = function (event) {
 socket.onclose = function (event) {
   // Log a message when disconnected
   //  from the WebSocket server
-  document.getElementById("status").innerHTML = "<p>not connected</p>";
+  document.getElementById("status").innerHTML = "Connection status: not connected. Try starting the server and refreshing the page.";
   console.log("Disconnected from WebSocket server");
 };
