@@ -15,9 +15,15 @@ which multiple modules read and modify a shared data source known as
 the blackboard.
 
 ## Getting Started
+### Setting up your environment
+Install the proper packages with `npm i`
 
-Start the server by running `node .` in the server directory.
+### Starting the server
+From the server directory, run `nodemon .`
 
+If you do not wish to enable hot reloading (crazy), run `node .` instead.
+
+### Running the client
 Run the client app by opening `index.html` in your browser or
 by previewing it in VS Code.
 
