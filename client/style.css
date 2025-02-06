@@ -13,6 +13,7 @@ body {
     overflow: hidden;
     align-items: center;
     justify-content: center;
+    /*Commented section is for a variation of the styling for Mars version.*/
     /*background-image: linear-gradient(to bottom, #021a40 30%, rgb(227, 164, 55));*/
     background-image: linear-gradient(to bottom, #021a40 70%, white);
 }
@@ -27,6 +28,7 @@ footer {
 footer::before {
     content: '';
     background: rgb(211, 212, 213);
+    /*Commented section is for a variation of the styling for Mars version.*/
     /*background: #f59c20;*/
     width: 200%;
     position: absolute;
