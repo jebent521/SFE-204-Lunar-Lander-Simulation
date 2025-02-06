@@ -1,12 +1,24 @@
-import { createServer } from 'http';
+const WebSocket = require('ws');
 
-const server = createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World!\n');
-});
+const wss = new WebSocket.Server({ port: 8080 });
 
-const PORT = 3000;
+wss.on('connection', function connection(ws) {
+  console.log('Client connected');
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/`);
+  ws.on('message', function incoming(message) {
+    if (message == 'thruster on') {
+      console.log('Thruster is on 🔥');
+      ws.send('Thruster is on 🔥');
+    } else if (message == 'thruster off') {
+      console.log('Thruster is off 💨')
+      ws.send('Thruster is off 💨');
+    } else {
+      console.log(`Unknown message: ${message}`);
+      ws.send(`Unknown message: ${message}`);
+    }
+  });
+
+  ws.on('close', function () {
+      console.log('Client disconnected');
+  });
 });
