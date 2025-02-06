@@ -25,7 +25,7 @@ socket.onopen = function (event) {
   // Alert the user that they are
   // connected to the WebSocket server
   document.getElementById("status").innerHTML = "Connection status: connected";
-  alert("You are Connected to WebSocket Server");
+  // alert("You are Connected to WebSocket Server");
 };
 
 // Event listener for when a message
@@ -35,7 +35,7 @@ socket.onmessage = function (event) {
   const outputDiv = document.getElementById("output");
   // Append a paragraph with the
   //  received message to the output div
-  outputDiv.innerHTML = `<p>Received <b>"${event.data}"</b> from server.</p>`;
+  outputDiv.innerHTML = event.data;
 };
 
 // Event listener for when the

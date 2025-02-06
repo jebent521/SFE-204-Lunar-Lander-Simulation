@@ -75,6 +75,11 @@ td {
   color: yellow;
 }
 
+#Additional_UI {
+  color: yellow;
+  text-align: right;
+}
+
 
 #stars {
   width: 1px;
