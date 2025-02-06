@@ -25,7 +25,6 @@ socket.onopen = function (event) {
   // Alert the user that they are
   // connected to the WebSocket server
   document.getElementById("status").innerHTML = "Connection status: connected";
-  // alert("You are Connected to WebSocket Server");
 };
 
 // Event listener for when a message
