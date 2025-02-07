@@ -8,7 +8,7 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
-  var isBurning = true;
+  var isBurning = false;
   var isDead = false;
 
   // Register events
@@ -41,6 +41,7 @@ wss.on('connection', async function connection(ws) {
     controlsMod(blackboard, isBurning);
     physicsMod(blackboard);
     loggingMod(blackboard);
+    communicationMod(blackboard, ws);
 
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
@@ -85,21 +86,42 @@ function physicsMod(blackboard) {
   const THRUST = 45_040;
   const MASS_FLOW = THRUST / G_0 / I_SP;
 
-  if (!blackboard.get("position")) { blackboard.set("position", 15_000 + LUNAR_RADIUS); }
-  if (!blackboard.get("velocity")) { blackboard.set("velocity", 0); }
-  if (!blackboard.get("mass")) { blackboard.set("mass", 16_400); }
+  const WARN_VEL = -3;
+  const KILL_VEL = -5;
 
-  let lunarG = G * LUNAR_MASS / (blackboard.get("position")**2);
+  if (!blackboard.has("position")) { blackboard.set("position", 15_000 + LUNAR_RADIUS); }
+  if (!blackboard.has("velocity")) { blackboard.set("velocity", 0); }
+  if (!blackboard.has("mass")) { blackboard.set("mass", 16_400); }
+
+  var position = blackboard.get("position");
+  var velocity = blackboard.get("velocity");
+  var mass = blackboard.get("mass");
+
+  let lunarG = G * LUNAR_MASS / (position**2);
   var acceleration = -lunarG;
 
   if (blackboard.get("isBurning")) {
-    acceleration += THRUST / blackboard.get("mass");
-    blackboard.set("mass", blackboard.get("mass") - MASS_FLOW * TIME_STEP);
+    acceleration += THRUST / mass;
+    mass -= MASS_FLOW * TIME_STEP;
   }
 
   // Update position and velocity
-  blackboard.set("position", blackboard.get("position") + blackboard.get("velocity") * TIME_STEP);
-  blackboard.set("velocity", blackboard.get("velocity") + acceleration * TIME_STEP);
+  position += velocity * TIME_STEP;
+  velocity += acceleration * TIME_STEP;
+
+  altitude = position - LUNAR_RADIUS;
+
+  if (altitude < 0){
+    if (velocity < KILL_VEL) { blackboard.set("health", 0); }
+    else if (velocity < WARN_VEL) { blackboard.set("health", 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100)); }
+
+    position = LUNAR_RADIUS; velocity = 0; altitude = 0;
+  }
+
+  blackboard.set("mass", mass);
+  blackboard.set("position", position);
+  blackboard.set("altitude", altitude);
+  blackboard.set("velocity", velocity);
 }
 
 /**
@@ -115,4 +137,15 @@ function controlsMod(blackboard, isBurning) {
  */
 function loggingMod(blackboard) {
   console.log(blackboard);
+}
+
+/**
+ * TALK TO THE CLIENT
+ */
+function communicationMod(blackboard, ws) {
+  if (blackboard.has("altitude")) { ws.send("altitude," + blackboard.get("altitude")); }
+  if (blackboard.has("velocity")) { ws.send("velocity," + blackboard.get("velocity")); }
+  if (blackboard.has("mass")) { ws.send("mass," + blackboard.get("mass")); }
+  if (blackboard.has("isBurning")) { ws.send("isBurning," + blackboard.get("isBurning")); }
+  if (blackboard.has("health")) { ws.send("health," + blackboard.get("health")); } else { ws.send("health," + 100); }
 }
