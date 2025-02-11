@@ -31,10 +31,13 @@ socket.onopen = function (event) {
 //  is received from the server
 socket.onmessage = function (event) {
   // Get the output div element
-  const outputDiv = document.getElementById("output");
+  const outputDiv = document.getElementById("thrusters");
   // Append a paragraph with the
   //  received message to the output div
-  outputDiv.innerHTML = event.data;
+  let data = event.data.split(",");
+  if (data[0] == "isBurning") {
+    outputDiv.innerHTML = (data[1] == "true") ? "ON" : "OFF";
+  }
 };
 
 // Event listener for when the
