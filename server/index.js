@@ -15,10 +15,8 @@ wss.on('connection', async function connection(ws) {
   ws.on('message', function incoming(message) {
     if (message == 'thruster on') {
       isBurning = true;
-      ws.send('Thruster is on 🔥');
     } else if (message == 'thruster off') {
       isBurning = false;
-      ws.send('Thruster is off 💨');
     } else {
       console.log(`Unknown message: ${message}`);
       ws.send(`Unknown message: ${message}`);
