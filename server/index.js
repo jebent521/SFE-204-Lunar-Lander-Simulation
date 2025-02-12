@@ -1,5 +1,22 @@
-const NS_PER_MS = 1_000_000;
+const TIME_ACCELERATION = 1;
+
+const NS_PER_MS = 1_000_000 / TIME_ACCELERATION;
 const MS_PER_TICK = 50;
+
+const TIME_STEP = MS_PER_TICK / 1_000;
+const G_0 = 9.80665;
+const LUNAR_MASS = 7.346 * 10**22;
+const LUNAR_RADIUS = 1_737_400;
+const G = 6.6743 * 10**-11;
+
+const FUEL_MASS = 8_200;
+const DRY_MASS = 8_200;
+const I_SP = 311;
+const THRUST = 45_040;
+const MASS_FLOW = THRUST / G_0 / I_SP;
+
+const WARN_VEL = -3;
+const KILL_VEL = -5;
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const WebSocket = require('ws');
@@ -29,7 +46,13 @@ wss.on('connection', async function connection(ws) {
   });
 
   // Now that there's a connection, start the server
-  var blackboard = new Map();
+  var blackboard = {
+    position: 15_000 + LUNAR_RADIUS,
+    velocity: 0,
+    mass: FUEL_MASS + DRY_MASS,
+    isBurning: false,
+    health: 100
+  };
   console.log(blackboard);
   while (true) {
     // Tick start
@@ -74,33 +97,23 @@ wss.on('connection', async function connection(ws) {
  * Dimensional analysis: kg/s = (kg m/s^2) / (m/s^2) / s
  */
 function physicsMod(blackboard) {
-  const TIME_STEP = MS_PER_TICK / 1_000;
-  const G_0 = 9.80665;
-  const LUNAR_MASS = 7.346 * 10**22;
-  const LUNAR_RADIUS = 1_737_400;
-  const G = 6.6743 * 10**-11;
-
-  const I_SP = 311;
-  const THRUST = 45_040;
-  const MASS_FLOW = THRUST / G_0 / I_SP;
-
-  const WARN_VEL = -3;
-  const KILL_VEL = -5;
-
-  if (!blackboard.has("position")) { blackboard.set("position", 15_000 + LUNAR_RADIUS); }
-  if (!blackboard.has("velocity")) { blackboard.set("velocity", 0); }
-  if (!blackboard.has("mass")) { blackboard.set("mass", 16_400); }
-
-  var position = blackboard.get("position");
-  var velocity = blackboard.get("velocity");
-  var mass = blackboard.get("mass");
+  var position = blackboard.position;
+  var velocity = blackboard.velocity;
+  var mass = blackboard.mass;
+  var isBurning = blackboard.isBurning;
 
   let lunarG = G * LUNAR_MASS / (position**2);
   var acceleration = -lunarG;
 
-  if (blackboard.get("isBurning")) {
-    acceleration += THRUST / mass;
+  if (isBurning) {
     mass -= MASS_FLOW * TIME_STEP;
+
+    if (mass < DRY_MASS) {
+      mass = DRY_MASS;
+      isBurning = false;
+    } else {
+      acceleration += THRUST / mass;
+    }
   }
 
   // Update position and velocity
@@ -110,16 +123,17 @@ function physicsMod(blackboard) {
   altitude = position - LUNAR_RADIUS;
 
   if (altitude < 0){
-    if (velocity < KILL_VEL) { blackboard.set("health", 0); }
-    else if (velocity < WARN_VEL) { blackboard.set("health", 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100)); }
+    if (velocity < KILL_VEL) { blackboard.health; }
+    else if (velocity < WARN_VEL) { blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100); }
 
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
   }
 
-  blackboard.set("mass", mass);
-  blackboard.set("position", position);
-  blackboard.set("altitude", altitude);
-  blackboard.set("velocity", velocity);
+  blackboard.isBurning = isBurning;
+  blackboard.mass = mass;
+  blackboard.position = position;
+  blackboard.altitude = altitude;
+  blackboard.velocity = velocity;
 }
 
 /**
@@ -127,7 +141,7 @@ function physicsMod(blackboard) {
  * that isBurning only gets updated once per tick.
  */
 function controlsMod(blackboard, isBurning) {
-  blackboard.set("isBurning", isBurning);
+  blackboard.isBurning = isBurning;
 }
 
 /**
@@ -141,9 +155,9 @@ function loggingMod(blackboard) {
  * TALK TO THE CLIENT
  */
 function communicationMod(blackboard, ws) {
-  if (blackboard.has("altitude")) { ws.send("altitude," + blackboard.get("altitude")); }
-  if (blackboard.has("velocity")) { ws.send("velocity," + blackboard.get("velocity")); }
-  if (blackboard.has("mass")) { ws.send("mass," + blackboard.get("mass")); }
-  if (blackboard.has("isBurning")) { ws.send("isBurning," + blackboard.get("isBurning")); }
-  if (blackboard.has("health")) { ws.send("health," + blackboard.get("health")); } else { ws.send("health," + 100); }
+  ws.send("altitude," + blackboard.altitude);
+  ws.send("velocity," + blackboard.velocity);
+  ws.send("mass," + blackboard.mass);
+  ws.send("isBurning," + blackboard.isBurning);
+  ws.send("health," + blackboard.health);
 }
