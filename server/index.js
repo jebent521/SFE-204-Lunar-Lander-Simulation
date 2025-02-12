@@ -1,4 +1,4 @@
-const TIME_ACCELERATION = 10;
+const TIME_ACCELERATION = 1;
 
 const NS_PER_MS = 1_000_000;
 const MS_PER_TICK = 50;
