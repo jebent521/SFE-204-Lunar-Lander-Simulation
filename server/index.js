@@ -141,7 +141,7 @@ function physicsMod(blackboard) {
  * that isBurning only gets updated once per tick.
  */
 function controlsMod(blackboard, isBurning) {
-  blackboard.isBurning = isBurning;
+  blackboard.isBurning = isBurning && (blackboard.health > 0);
 }
 
 /**
