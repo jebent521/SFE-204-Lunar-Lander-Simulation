@@ -1,6 +1,6 @@
-const TIME_ACCELERATION = 1;
+const TIME_ACCELERATION = 10;
 
-const NS_PER_MS = 1_000_000 / TIME_ACCELERATION;
+const NS_PER_MS = 1_000_000;
 const MS_PER_TICK = 50;
 
 const TIME_STEP = MS_PER_TICK / 1_000;
@@ -67,9 +67,9 @@ wss.on('connection', async function connection(ws) {
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
     elapsed = elapsed / NS_PER_MS;
-    if (elapsed > MS_PER_TICK) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
+    if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
     else { 
-      await sleep(MS_PER_TICK - elapsed);
+      await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
       if (isDead) { break; }
     }
   }
@@ -123,7 +123,7 @@ function physicsMod(blackboard) {
   altitude = position - LUNAR_RADIUS;
 
   if (altitude < 0){
-    if (velocity < KILL_VEL) { blackboard.health; }
+    if (velocity < KILL_VEL) { blackboard.health = 0; }
     else if (velocity < WARN_VEL) { blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100); }
 
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
