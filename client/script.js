@@ -30,13 +30,40 @@ socket.onopen = function (event) {
 // Event listener for when a message
 //  is received from the server
 socket.onmessage = function (event) {
-  // Get the output div element
-  const outputDiv = document.getElementById("thrusters");
-  // Append a paragraph with the
-  //  received message to the output div
-  let data = event.data.split(",");
-  if (data[0] == "isBurning") {
-    outputDiv.innerHTML = (data[1] == "true") ? "ON" : "OFF";
+  // Parse the received JSON message
+  let data = JSON.parse(event.data);
+  
+  // Switch over the keys in the JSON object
+  for (let key in data) {
+    switch (key) {
+      case "altitude":
+        const altitude = document.getElementById("altitude");
+        altitude.innerHTML = data[key];
+        break;
+      case "velocity":
+        const velocity = document.getElementById("velocity");
+        velocity.innerHTML = data[key];
+        break;
+      case "mass":
+        const mass = document.getElementById("mass");
+        mass.innerHTML = data[key];
+        break;
+      case "isBurning":
+        const thrusters = document.getElementById("thrusters");
+        thrusters.innerHTML = data[key] ? "ON" : "OFF";
+        break;
+      case "health":
+        const health = document.getElementById("health");
+        health.innerHTML = data[key];
+        break;
+      case "stats":
+        const stats = document.getElementById("stats");
+        stats.innerHTML = `Statistics: ${data[key]}`;
+        break;
+      // Add more cases as needed for other keys
+      default:
+        console.log(`Unknown key: ${key}`);
+    }
   }
 };
 
