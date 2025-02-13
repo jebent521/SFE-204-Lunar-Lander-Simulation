@@ -38,15 +38,15 @@ socket.onmessage = function (event) {
     switch (key) {
       case "altitude":
         const altitude = document.getElementById("altitude");
-        altitude.innerHTML = data[key];
+        altitude.innerHTML = data[key].toFixed(2);
         break;
       case "velocity":
         const velocity = document.getElementById("velocity");
-        velocity.innerHTML = data[key];
+        velocity.innerHTML = data[key].toFixed(2);
         break;
       case "mass":
         const mass = document.getElementById("mass");
-        mass.innerHTML = data[key];
+        mass.innerHTML = data[key].toFixed();
         break;
       case "isBurning":
         const thrusters = document.getElementById("thrusters");
@@ -54,11 +54,15 @@ socket.onmessage = function (event) {
         break;
       case "health":
         const health = document.getElementById("health");
-        health.innerHTML = data[key];
+        health.innerHTML = data[key].toFixed();
         break;
       case "stats":
         const stats = document.getElementById("stats");
-        stats.innerHTML = `Statistics: ${data[key]}`;
+        stats.innerHTML = "<tr><th>Statistic</th><th>Value</th></tr>";
+        let statsData = data[key];
+        for (let statKey in statsData) {
+          stats.innerHTML += `<tr><td>${statKey}</td><td>${statsData[statKey]}</td></tr>`;
+        }
         break;
       // Add more cases as needed for other keys
       default:

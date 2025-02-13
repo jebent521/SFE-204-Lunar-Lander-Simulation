@@ -23,10 +23,12 @@ const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
+var isDead = true;
+
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
   var isBurning = false;
-  var isDead = false;
+  isDead = false;
 
   // Register events
   ws.on('message', function incoming(message) {
@@ -62,6 +64,7 @@ wss.on('connection', async function connection(ws) {
     // TODO: Run modules
     controlsMod(blackboard, isBurning);
     physicsMod(blackboard);
+    StatisticsMod.recordHighestAltitude(blackboard);
     loggingMod(blackboard);
     communicationMod(blackboard, ws);
 
@@ -71,7 +74,7 @@ wss.on('connection', async function connection(ws) {
     if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
     else { 
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
-      if (isDead) { break; }
+      if (isDead) { break; } // TODO: Add a way to restart
     }
   }
   ws.send(JSON.stringify({stats: StatisticsMod.getCurrentStats(blackboard)}));
@@ -200,11 +203,11 @@ const StatisticsMod = {
   getCurrentStats: function(blackboard) {
     return {
       attempts: blackboard.attempts,
-      landings: blackboard.landings,
-      crashes: blackboard.crashes,
+      landings: blackboard.landings ?? 0,
+      crashes: blackboard.crashes ?? 0,
       highestAltitude: blackboard.highestAltitude,
-      winRate: blackboard.landings / blackboard.attempts,
-      lossRate: blackboard.crashes / blackboard.attempts
+      winRate: (blackboard.landings ?? 0) / blackboard.attempts,
+      lossRate: (blackboard.crashes ?? 0) / blackboard.attempts
     }
   }
 }
