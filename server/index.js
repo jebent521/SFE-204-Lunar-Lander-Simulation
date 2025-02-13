@@ -23,10 +23,12 @@ const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
+var isDead = true;
+
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
   var isBurning = false;
-  var isDead = false;
+  isDead = false;
 
   // Register events
   ws.on('message', function incoming(message) {
@@ -54,6 +56,7 @@ wss.on('connection', async function connection(ws) {
     health: 100
   };
   console.log(blackboard);
+  StatisticsMod.addAttempt(blackboard);
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
@@ -61,6 +64,7 @@ wss.on('connection', async function connection(ws) {
     // TODO: Run modules
     controlsMod(blackboard, isBurning);
     physicsMod(blackboard);
+    StatisticsMod.recordHighestAltitude(blackboard);
     loggingMod(blackboard);
     communicationMod(blackboard, ws);
 
@@ -70,9 +74,10 @@ wss.on('connection', async function connection(ws) {
     if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
     else { 
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
-      if (isDead) { break; }
+      if (isDead) { break; } // TODO: Add a way to restart
     }
   }
+  ws.send(JSON.stringify({stats: StatisticsMod.getCurrentStats(blackboard)}));
 });
 
 /**
@@ -123,8 +128,15 @@ function physicsMod(blackboard) {
   altitude = position - LUNAR_RADIUS;
 
   if (altitude < 0){
-    if (velocity < KILL_VEL) { blackboard.health = 0; }
-    else if (velocity < WARN_VEL) { blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100); }
+    if (velocity < KILL_VEL) {
+      blackboard.health = 0;
+      isDead = true;
+      StatisticsMod.addCrash(blackboard);
+    }
+    else if (velocity < WARN_VEL) {
+      blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100);
+      StatisticsMod.addLanding(blackboard);
+    }
 
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
   }
@@ -155,9 +167,47 @@ function loggingMod(blackboard) {
  * TALK TO THE CLIENT
  */
 function communicationMod(blackboard, ws) {
-  ws.send("altitude," + blackboard.altitude);
-  ws.send("velocity," + blackboard.velocity);
-  ws.send("mass," + blackboard.mass);
-  ws.send("isBurning," + blackboard.isBurning);
-  ws.send("health," + blackboard.health);
+  ws.send(JSON.stringify({
+    altitude: blackboard.altitude,
+    velocity: blackboard.velocity,
+    mass: blackboard.mass,
+    isBurning: blackboard.isBurning,
+    health: blackboard.health
+  }));
+}
+
+const StatisticsMod = {
+  addAttempt: function(blackboard) {
+    if (blackboard.hasOwnProperty("attempts")) { blackboard.attempts += 1; }
+    else { blackboard.attempts = 1; }
+  },
+
+  addLanding: function(blackboard) {
+    if (blackboard.hasOwnProperty("landings")) { blackboard.landings += 1; }
+    else { blackboard.landings = 1; }
+  },
+
+  addCrash: function(blackboard) {
+    if (blackboard.hasOwnProperty("crashes")) { blackboard.crashes += 1; }
+    else { blackboard.crashes = 1; }
+  },
+
+  recordHighestAltitude: function(blackboard) {
+    let altitude = blackboard.altitude;
+    if (blackboard.hasOwnProperty("highestAltitude")) {
+      let highest = blackboard.highestAltitude;
+      if (altitude > highest) { blackboard.highestAltitude = altitude; }
+    } else { blackboard.highestAltitude = altitude; }
+  },
+
+  getCurrentStats: function(blackboard) {
+    return {
+      attempts: blackboard.attempts,
+      landings: blackboard.landings ?? 0,
+      crashes: blackboard.crashes ?? 0,
+      highestAltitude: blackboard.highestAltitude,
+      winRate: (blackboard.landings ?? 0) / blackboard.attempts,
+      lossRate: (blackboard.crashes ?? 0) / blackboard.attempts
+    }
+  }
 }
