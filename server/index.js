@@ -1,3 +1,8 @@
+const StatisticsMod = require('./modules/statistics');
+const controlsMod = require('./modules/controls');
+const loggingMod = require('./modules/logging');
+const communicationMod = require('./modules/communications');
+
 const TIME_ACCELERATION = 1;
 
 const NS_PER_MS = 1_000_000;
@@ -146,68 +151,4 @@ function physicsMod(blackboard) {
   blackboard.position = position;
   blackboard.altitude = altitude;
   blackboard.velocity = velocity;
-}
-
-/**
- * Simply updates the blackboard with the given variable. The split ensures
- * that isBurning only gets updated once per tick.
- */
-function controlsMod(blackboard, isBurning) {
-  blackboard.isBurning = isBurning && (blackboard.health > 0);
-}
-
-/**
- * Dumps the blackboard to the log
- */
-function loggingMod(blackboard) {
-  console.log(blackboard);
-}
-
-/**
- * TALK TO THE CLIENT
- */
-function communicationMod(blackboard, ws) {
-  ws.send(JSON.stringify({
-    altitude: blackboard.altitude,
-    velocity: blackboard.velocity,
-    mass: blackboard.mass,
-    isBurning: blackboard.isBurning,
-    health: blackboard.health
-  }));
-}
-
-const StatisticsMod = {
-  addAttempt: function(blackboard) {
-    if (blackboard.hasOwnProperty("attempts")) { blackboard.attempts += 1; }
-    else { blackboard.attempts = 1; }
-  },
-
-  addLanding: function(blackboard) {
-    if (blackboard.hasOwnProperty("landings")) { blackboard.landings += 1; }
-    else { blackboard.landings = 1; }
-  },
-
-  addCrash: function(blackboard) {
-    if (blackboard.hasOwnProperty("crashes")) { blackboard.crashes += 1; }
-    else { blackboard.crashes = 1; }
-  },
-
-  recordHighestAltitude: function(blackboard) {
-    let altitude = blackboard.altitude;
-    if (blackboard.hasOwnProperty("highestAltitude")) {
-      let highest = blackboard.highestAltitude;
-      if (altitude > highest) { blackboard.highestAltitude = altitude; }
-    } else { blackboard.highestAltitude = altitude; }
-  },
-
-  getCurrentStats: function(blackboard) {
-    return {
-      attempts: blackboard.attempts,
-      landings: blackboard.landings ?? 0,
-      crashes: blackboard.crashes ?? 0,
-      highestAltitude: blackboard.highestAltitude,
-      winRate: (blackboard.landings ?? 0) / blackboard.attempts,
-      lossRate: (blackboard.crashes ?? 0) / blackboard.attempts
-    }
-  }
 }
