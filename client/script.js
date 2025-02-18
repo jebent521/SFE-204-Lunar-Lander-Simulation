@@ -7,13 +7,13 @@ window.onload = function () {
 
   window.onkeydown = function (key) {
     if (key.keyCode === space_bar) {
-      socket.send('thruster on');
+      socket.send('isBurning,true');
     };
   };
 
   window.onkeyup = function (key) {
     if (key.keyCode === space_bar) {
-      socket.send('thruster off');
+      socket.send('isBurning,false');
     };
   }
 };
@@ -81,7 +81,7 @@ socket.onmessage = function (event) {
 // WebSocket connection is closed
 socket.onclose = function (event) {
   // Log a message when disconnected
-  //  from the WebSocket server
+  // from the WebSocket server
   document.getElementById("status").innerHTML = "Connection status: not connected. Try starting the server and refreshing the page.";
   console.log("Disconnected from WebSocket server");
 };
