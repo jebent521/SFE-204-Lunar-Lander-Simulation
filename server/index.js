@@ -32,27 +32,8 @@ var isDead = true;
 
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
-  var isBurning = false;
-  isDead = false;
 
-  // Register events
-  ws.on('message', function incoming(message) {
-    if (message == 'thruster on') {
-      isBurning = true;
-    } else if (message == 'thruster off') {
-      isBurning = false;
-    } else {
-      console.log(`Unknown message: ${message}`);
-      ws.send(`Unknown message: ${message}`);
-    }
-  });
-
-  ws.on('close', function () {
-      console.log('Client disconnected');
-      isDead = true;
-  });
-
-  // Now that there's a connection, start the server
+  // Blackboard. These values are updated once per tick.
   var blackboard = {
     position: 15_000 + LUNAR_RADIUS,
     velocity: 0,
@@ -60,17 +41,48 @@ wss.on('connection', async function connection(ws) {
     isBurning: false,
     health: 100
   };
+
+  // Holding variables. These may change many times per tick, 
+  // but only get copied to the blackboard once per tick
+  var holder = {
+    isBurning: false,
+    disconnected: false,
+    isPaused: false
+  };
+
+  // Register events
+  ws.on('message', function incoming(message) {
+    let [k, v] = message.toString().split(",");
+
+    if (v == 'true') { v = true; }
+    else if (v == 'false') { v = false; }
+
+    if (k in holder) { holder[k] = v }
+    else {
+      console.log(`Unknown message: ${message}`);
+      ws.send(`Unknown message: ${message}`);
+    }
+  });
+
+  ws.on('close', function () {
+      console.log('Client disconnected');
+      holder.disconnected = true;
+  });
+
+  // Now that there's a connection, start the server
   console.log(blackboard);
   StatisticsMod.addAttempt(blackboard);
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
 
-    // TODO: Run modules
-    controlsMod(blackboard, isBurning);
-    physicsMod(blackboard);
-    StatisticsMod.recordHighestAltitude(blackboard);
-    loggingMod(blackboard);
+    if (!holder.isPaused) {
+      controlsMod(blackboard, holder.isBurning);
+      physicsMod(blackboard);
+      StatisticsMod.recordHighestAltitude(blackboard);
+      loggingMod(blackboard);
+    }
+
     communicationMod(blackboard, ws);
 
     // Wait for next tick
@@ -79,7 +91,7 @@ wss.on('connection', async function connection(ws) {
     if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
     else { 
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
-      if (isDead) { break; } // TODO: Add a way to restart
+      if (holder.disconnected) { break; }
     }
   }
   ws.send(JSON.stringify({stats: StatisticsMod.getCurrentStats(blackboard)}));
