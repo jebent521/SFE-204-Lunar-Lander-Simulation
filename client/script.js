@@ -32,7 +32,7 @@ socket.onopen = function (event) {
 socket.onmessage = function (event) {
   // Parse the received JSON message
   let data = JSON.parse(event.data);
-  
+
   // Switch over the keys in the JSON object
   for (let key in data) {
     switch (key) {
@@ -61,7 +61,10 @@ socket.onmessage = function (event) {
         stats.innerHTML = "<tr><th>Statistic</th><th>Value</th></tr>";
         let statsData = data[key];
         for (let statKey in statsData) {
-          stats.innerHTML += `<tr><td>${statKey}</td><td>${statsData[statKey]}</td></tr>`;
+          const result = statKey.replace(/([A-Z])/g, " $1");
+          const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
+
+          stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${statsData[statKey]}</td></tr>`;
         }
         break;
       // Add more cases as needed for other keys
