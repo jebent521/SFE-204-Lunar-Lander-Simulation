@@ -89,7 +89,7 @@ wss.on('connection', async function connection(ws) {
     var elapsed = Number(process.hrtime.bigint() - time)
     elapsed = elapsed / NS_PER_MS;
     if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
-    else { 
+    else {
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
       if (holder.disconnected) { break; }
     }
