@@ -92,6 +92,7 @@ wss.on('connection', async function connection(ws) {
       if (holder.disconnected) { break; }
     }
   }
+
   ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
 });
 
