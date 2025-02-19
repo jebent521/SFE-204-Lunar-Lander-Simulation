@@ -1,4 +1,4 @@
-const StatisticsMod = require('./modules/statistics');
+const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
@@ -69,7 +69,7 @@ wss.on('connection', async function connection(ws) {
 
   // Now that there's a connection, start the server
   console.log(blackboard);
-  StatisticsMod.addAttempt(blackboard);
+  statisticsMod.addAttempt(blackboard);
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
@@ -77,7 +77,7 @@ wss.on('connection', async function connection(ws) {
     if (!holder.isPaused) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
-      StatisticsMod.recordHighestAltitude(blackboard);
+      statisticsMod.recordHighestAltitude(blackboard);
       loggingMod(blackboard);
     }
 
@@ -92,7 +92,7 @@ wss.on('connection', async function connection(ws) {
       if (holder.disconnected) { break; }
     }
   }
-  ws.send(JSON.stringify({stats: StatisticsMod.getCurrentStats(blackboard)}));
+  ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
 });
 
 /**
@@ -146,11 +146,11 @@ function physicsMod(blackboard) {
     if (velocity < KILL_VEL) {
       blackboard.health = 0;
       isDead = true;
-      StatisticsMod.addCrash(blackboard);
+      statisticsMod.addCrash(blackboard);
     }
     else if (velocity < WARN_VEL) {
       blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100);
-      StatisticsMod.addLanding(blackboard);
+      statisticsMod.addLanding(blackboard);
     }
 
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
