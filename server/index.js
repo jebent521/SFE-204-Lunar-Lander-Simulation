@@ -78,9 +78,9 @@ wss.on('connection', async function connection(ws) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
-      loggingMod(blackboard);
     }
 
+    loggingMod(blackboard);
     communicationMod(blackboard, ws);
 
     // Wait for next tick
@@ -92,6 +92,7 @@ wss.on('connection', async function connection(ws) {
       if (holder.disconnected) { break; }
     }
   }
+
   ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
 });
 
