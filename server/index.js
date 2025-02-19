@@ -28,8 +28,6 @@ const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
-var isDead = true;
-
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
 
@@ -144,7 +142,7 @@ function physicsMod(blackboard) {
 
   altitude = position - LUNAR_RADIUS;
 
-  if (altitude < 0){
+  if (altitude <= 0){
     if (velocity < KILL_VEL) {
       blackboard.health = 0;
       isDead = true;
