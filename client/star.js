@@ -21,14 +21,14 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
 
   //to see large list of stars in the console: uncomment the below
   //console.log(`${boxShadowList}`);
-  
+
   const stars = document.getElementById("stars");
   stars.style.width = "1px";
   stars.style.height = "1px";
   stars.style.background = "transparent";
   stars.style.borderRadius = '50%';
   stars.style.boxShadow = `${boxShadowList}`;
-  stars.style.animation = 'animStar 150s linear infinite';
+  stars.style.animation = 'animStar 40s linear infinite';
 
   const style = document.createElement('style');
   document.head.appendChild(style);
@@ -45,9 +45,9 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   stars2.style.background = "transparent";
   stars2.style.borderRadius = '50%';
   stars2.style.boxShadow = `${boxShadowList2}`;
-  stars2.style.animation = 'animStar 150s linear infinite';
+  stars2.style.animation = 'animStar 80s linear infinite';
 
-  const numShadows3 = 200;
+  const numShadows3 = 100;
   const boxShadowList3 = generateBoxShadows(numShadows3, xOffsetRange, yOffsetRange, color);
 
   const stars3 = document.getElementById("stars3");
@@ -56,4 +56,19 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   stars3.style.background = "transparent";
   stars3.style.borderRadius = '50%';
   stars3.style.boxShadow = `${boxShadowList3}`;
-  stars3.style.animation = 'animStar 150s linear infinite';
+  stars3.style.animation = 'animStar 120s linear infinite';
+
+  const stars1clone = stars.cloneNode();
+  stars1clone.style.animationDelay = "-20s";
+  stars1clone.style.opacity = 100;
+  document.getElementById("AllStars").appendChild(stars1clone);
+
+  const stars2clone = stars2.cloneNode();
+  stars2clone.style.animationDelay = "-40s";
+  stars2clone.style.opacity = 100;
+  document.getElementById("AllStars").appendChild(stars2clone);
+
+  const stars3clone = stars3.cloneNode();
+  stars3clone.style.animationDelay = "-60s";
+  stars3clone.style.opacity = 100;
+  document.getElementById("AllStars").appendChild(stars3clone);
