@@ -28,7 +28,13 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   stars.style.background = "transparent";
   stars.style.borderRadius = '50%';
   stars.style.boxShadow = `${boxShadowList}`;
-  stars.style.animation = 'animStar 10s linear infinite';
+  stars.style.animation = 'animStar 150s linear infinite';
+
+  const style = document.createElement('style');
+  document.head.appendChild(style);
+  const sheet = style.sheet;
+  sheet.insertRule(`#stars::after { width: 1px; height: 1px; background: transparent;
+    border-radius: 50%; box-shadow: ${boxShadowList}; }`, sheet.cssRules.length);
 
   const numShadows2 = 400;
   const boxShadowList2 = generateBoxShadows(numShadows2, xOffsetRange, yOffsetRange, color);
@@ -39,7 +45,7 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   stars2.style.background = "transparent";
   stars2.style.borderRadius = '50%';
   stars2.style.boxShadow = `${boxShadowList2}`;
-  stars2.style.animation = 'animStar 20s linear infinite';
+  stars2.style.animation = 'animStar 150s linear infinite';
 
   const numShadows3 = 200;
   const boxShadowList3 = generateBoxShadows(numShadows3, xOffsetRange, yOffsetRange, color);
@@ -50,4 +56,4 @@ function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   stars3.style.background = "transparent";
   stars3.style.borderRadius = '50%';
   stars3.style.boxShadow = `${boxShadowList3}`;
-  stars3.style.animation = 'animStar 30s linear infinite';
+  stars3.style.animation = 'animStar 150s linear infinite';

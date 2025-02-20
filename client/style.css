@@ -1,18 +1,3 @@
-#stars::after {
-  /*Place holder*/
-  color: white;
-}
-
-#stars2::after {
-  /*Place holder*/
-  color: red;
-}
-
-#stars3::after {
-  /*Place holder*/
-  color: blue;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -98,11 +83,9 @@ td {
 @keyframes animStar {
   from {
     transform: translateY(0px);
-    opacity: 85%;
   }
 
   to {
-    transform: translateY(-1000px);
-    opacity: 25%;
+    transform: translateY(-2000px);
   }
 }
