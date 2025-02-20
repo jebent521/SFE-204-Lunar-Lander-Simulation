@@ -151,6 +151,7 @@ function physicsMod(blackboard) {
     }
     else if (velocity < WARN_VEL) {
       blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100);
+      // FIXME: completely safe landings don't register
       statisticsMod.addLanding(blackboard);
     }
 
