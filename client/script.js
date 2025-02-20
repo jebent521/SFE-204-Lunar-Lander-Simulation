@@ -2,22 +2,41 @@
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
 
+let isPaused = false; //makes everything actually stop when pause menu activates
+
 window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
-    if (key.keyCode === space_bar) {
+    if (key.keyCode === space_bar && !isPaused) {
       socket.send('thruster on');
     };
   };
 
   window.onkeyup = function (key) {
-    if (key.keyCode === space_bar) {
+    if (key.keyCode === space_bar && !isPaused) {
       socket.send('thruster off');
     };
   }
 };
 
+//Pause Menu
+window.addEventListener('keyup', function(event){
+ const pauseMenu = document.getElimentId('pauseMenu');
+  if(event.code === 'Escape'){ //escape key actuvates the pause menu
+if(pauseMenu.style.display === 'none'){
+  pauseMenu.style.display = 'block';
+  isPaused = true;
+} else{
+  pauseMenu.style.display = 'none';
+  isPaused = false;
+    }
+}
+if(event.code === 'Enter' && isPaused{
+  pause.Menu.style.display = 'none';
+  isPaused = false;
+  } 
+});
 
 // Event listener for when
 //the WebSocket connection is opened
