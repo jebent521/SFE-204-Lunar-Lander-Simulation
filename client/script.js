@@ -2,27 +2,39 @@
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
 
-let isPaused = false; //makes everything actually stop when pause menu activates
+let isPaused = true; //makes everything actually stop when pause menu activates
 
-window.onload = function () {
+window.onload = function () { //Shows Start Menu at startup
+  const startMenu = document.getElementById('StartMenu');
+  startMenu.style.display = 'flex';
+
   var space_bar = 32;
 
   window.onkeydown = function (key) {
-    if (key.keyCode === space_bar && !isPaused) {
+    if(isPaused) return;
+    if (key.keyCode === space_bar) {
       socket.send('thruster on');
     };
   };
 
   window.onkeyup = function (key) {
-    if (key.keyCode === space_bar && !isPaused) {
+    if(isPaused) return;
+    if (key.keyCode === space_bar) {
       socket.send('thruster off');
     };
   }
 };
+window.addEventListener('keydown', function(event) {
+  if(event.key === '1' && isPaused){
+    const startMenu = document.getElementById('StartMenu');
+    startMenu.style.display = 'none';
+    isPaused = false;
+  }
+});
 
 //Pause Menu
 window.addEventListener('keyup', function(event){
- const pauseMenu = document.getElimentId('pauseMenu');
+ const pauseMenu = document.getElementById('pauseMenu');
   if(event.code === 'Escape'){ //escape key actuvates the pause menu
 if(pauseMenu.style.display === 'none'){
   pauseMenu.style.display = 'block';
@@ -32,8 +44,8 @@ if(pauseMenu.style.display === 'none'){
   isPaused = false;
     }
 }
-if(event.code === 'Enter' && isPaused{
-  pause.Menu.style.display = 'none';
+if(event.code === 'Enter' && isPaused){ // enter leaves pause 
+  pauseMenu.style.display = 'none';
   isPaused = false;
   } 
 });
