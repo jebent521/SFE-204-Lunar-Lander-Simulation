@@ -55,6 +55,8 @@
                         <td><var>hehe</var></td>
                     </tr>-->
             </table>
+            <!--Remove this input after Scrum report: is only meant for proof of concept.-->
+            <input type="button" value="Start/Stop Stars" onclick="toggleAnimation()">
         </div>
         <div class="column" id="Lander_column"></div>
         <div class="column" id="Additional_UI">
@@ -62,9 +64,12 @@
             <table id="stats"></table>
         </div>
     </div>
-    <div id="stars" style="z-index: 0;"></div>
-    <div id="stars2" style="z-index: 0;"></div>
-    <div id="stars3" style="z-index: 0;"></div>
+    <div id="AllStars">
+        <div id="stars" class="starAnimation" style="z-index: 0;"></div>
+        <div id="stars2" class="starAnimation" style="z-index: 0;"></div>
+        <div id="stars3" class="starAnimation" style="z-index: 0;"></div>
+    </div>
+    <script src="star.js"></script>
     <footer></footer>
 </body>
 
