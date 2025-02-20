@@ -34,6 +34,7 @@ function unpauseGame() {
 }
 
 window.onload = function () {
+
   var space_bar = 32;
 
   window.onkeydown = function (key) {
@@ -50,6 +51,13 @@ window.onload = function () {
     };
   }
 };
+window.addEventListener('keydown', function(event) {
+  if(event.key === '1' && isPaused){
+    const startMenu = document.getElementById('StartMenu');
+    startMenu.style.display = 'none';
+    isPaused = false;
+  }
+});
 
 window.addEventListener('keydown', function(event) {
   if (event.key === '1' && isPaused) {
