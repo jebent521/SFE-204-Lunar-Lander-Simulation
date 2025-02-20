@@ -47,37 +47,34 @@ window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
-    if(isPaused) return;
-    if (key.keyCode === space_bar) {
-      socket.send('isBurning,true');
+    if (key.keyCode === space_bar && !isPaused) {
+      socket.send('thruster on');
     };
   };
 
   window.onkeyup = function (key) {
-    if(isPaused) return;
-    if (key.keyCode === space_bar) {
-      socket.send('isBurning,false');
+    if (key.keyCode === space_bar && !isPaused) {
+      socket.send('thruster off');
     };
   }
 };
 
-window.addEventListener('keydown', function(event) {
-  if (event.key === '1' && isPaused) {
-    startGame();
-  }
-});
-
 //Pause Menu
-window.addEventListener('keydown', function(event) {
-  if (!isStarted) { return; } // no pause menu until we start the game
-
-  if (event.code === 'Escape') { // escape key can pause or unpause
-    (isPaused) ? unpauseGame() : pauseGame();
-  } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
-    unpauseGame();
-  }
-
-  socket.send("isPaused," + isPaused);
+window.addEventListener('keyup', function(event){
+ const pauseMenu = document.getElimentId('pauseMenu');
+  if(event.code === 'Escape'){ //escape key actuvates the pause menu
+if(pauseMenu.style.display === 'none'){
+  pauseMenu.style.display = 'block';
+  isPaused = true;
+} else{
+  pauseMenu.style.display = 'none';
+  isPaused = false;
+    }
+}
+if(event.code === 'Enter' && isPaused{
+  pause.Menu.style.display = 'none';
+  isPaused = false;
+  } 
 });
 
 // Event listener for when
@@ -149,3 +146,4 @@ socket.onclose = function (event) {
   document.getElementById("status").innerHTML = "Connection status: not connected. Try starting the server and refreshing the page.";
   console.log("Disconnected from WebSocket server");
 };
+
