@@ -68,25 +68,10 @@
     </div>
     <script src="star.js"></script>
     <!-- Pause Menu: takes up whole screen, black background, tells you to hit enter to leave -->
-    <div id="pauseMenu" class="menu">
+    <div id = "pauseMenu" style="display: none; postion: fixed; top:0; left:0; width 100%; height: 100%; background-color: black; color: white; display: flex; justify-content: center; align-items: center; z-index: 9999;">
         <div style="text-align: center;">
             <h2>Paused</h2>
             <p>Press <strong>Enter</strong> to resume.</p>
-        </div>
-    </div>
-    <div id="startMenu" class="menu" style="display: flex">
-        <div style="text-align: center;">
-            <h2>Eclipse</h2>
-            <p>Press <strong>1</strong> to begin.</p>
-            <br><br>
-            <form action="">
-                <label for="cars">Select Dry weight:</label>
-                <select name="cars" id="cars">
-                  <option value="8200">Basic lander</option>
-                  <option value="9000">Lander with Rover</option>
-                  <option value="8420">Lander with Astronaut</option>
-                </select>
-              </form>
         </div>
     </div>
     <footer></footer>
