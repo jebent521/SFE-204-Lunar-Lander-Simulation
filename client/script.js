@@ -38,15 +38,15 @@ socket.onmessage = function (event) {
     switch (key) {
       case "altitude":
         const altitude = document.getElementById("altitude");
-        altitude.innerHTML = data[key].toFixed(2);
+        altitude.innerHTML = `${data[key].toFixed(2)} m`;
         break;
       case "velocity":
         const velocity = document.getElementById("velocity");
-        velocity.innerHTML = data[key].toFixed(2);
+        velocity.innerHTML = `${data[key].toFixed(2)} m/s`;
         break;
       case "mass":
         const mass = document.getElementById("mass");
-        mass.innerHTML = data[key].toFixed();
+        mass.innerHTML = `${data[key].toFixed()} kg`;
         break;
       case "isBurning":
         const thrusters = document.getElementById("thrusters");
@@ -63,8 +63,11 @@ socket.onmessage = function (event) {
         for (let statKey in statsData) {
           const result = statKey.replace(/([A-Z])/g, " $1");
           const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
-
-          stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${statsData[statKey]}</td></tr>`;
+          let data = statsData[statKey];
+          if (statKey.toLowerCase().includes('altitude')) {
+            data = `${data} m`;
+          }
+          stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
         break;
       // Add more cases as needed for other keys
