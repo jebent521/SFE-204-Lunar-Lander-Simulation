@@ -28,6 +28,9 @@ more complex than a merge or squash, but may be clearer to read
 than a squash for extremely large PRs. This is most easily done
 via GitHub.
 
+After the branch has been merged, remember to delete it - the 
+GitHub UI has a convienent button for doing that.
+
 ## I'll walk you through a basic example:
 
 Say I'm going to create a new api endpoint on our server that 
