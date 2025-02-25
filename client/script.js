@@ -44,7 +44,7 @@ window.addEventListener('keydown', function(event) {
   } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
     pauseMenu.style.display = 'none';
     isPaused = false;
-  } 
+  }
 });
 
 // Event listener for when
