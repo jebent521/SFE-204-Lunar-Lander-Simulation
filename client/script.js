@@ -7,9 +7,7 @@ const startMenu = document.getElementById('startMenu');
 let isStarted = false; // Has the game begun?
 let isPaused = true;   // Is the server running?
 
-window.onload = function () { //Shows Start Menu at startup
-  const startMenu = document.getElementById('StartMenu');
-
+window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
@@ -26,10 +24,11 @@ window.onload = function () { //Shows Start Menu at startup
     };
   }
 };
+
 window.addEventListener('keydown', function(event) {
-  if(event.key === '1' && isPaused){
-    const startMenu = document.getElementById('StartMenu');
+  if (event.key === '1' && isPaused) {
     startMenu.style.display = 'none';
+    isStarted = true;
     isPaused = false;
   }
 });
