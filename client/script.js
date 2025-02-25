@@ -2,12 +2,12 @@
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
 
-let isPaused = true; //makes everything actually stop when pause menu activates
+const pauseMenu = document.getElementById('pauseMenu');
+const startMenu = document.getElementById('startMenu');
+let isStarted = false; // Has the game begun?
+let isPaused = true;   // Is the server running?
 
-window.onload = function () { //Shows Start Menu at startup
-  const startMenu = document.getElementById('StartMenu');
-  startMenu.style.display = 'flex';
-
+window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
@@ -24,29 +24,26 @@ window.onload = function () { //Shows Start Menu at startup
     };
   }
 };
+
 window.addEventListener('keydown', function(event) {
-  if(event.key === '1' && isPaused){
-    const startMenu = document.getElementById('StartMenu');
+  if (event.key === '1' && isPaused) {
     startMenu.style.display = 'none';
+    isStarted = true;
     isPaused = false;
   }
 });
 
 //Pause Menu
-window.addEventListener('keyup', function(event){
- const pauseMenu = document.getElementById('pauseMenu');
-  if(event.code === 'Escape'){ //escape key actuvates the pause menu
-if(pauseMenu.style.display === 'none'){
-  pauseMenu.style.display = 'block';
-  isPaused = true;
-} else{
-  pauseMenu.style.display = 'none';
-  isPaused = false;
-    }
-}
-if(event.code === 'Enter' && isPaused){ // enter leaves pause 
-  pauseMenu.style.display = 'none';
-  isPaused = false;
+window.addEventListener('keydown', function(event) {
+
+  if (!isStarted) { return; } // no pause menu until we start the game
+
+  if (event.code === 'Escape') { // escape key can pause or unpause
+    isPaused = !isPaused;
+    pauseMenu.style.display = isPaused ? 'flex' : 'none';
+  } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
+    pauseMenu.style.display = 'none';
+    isPaused = false;
   } 
 });
 
