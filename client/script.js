@@ -30,12 +30,15 @@ window.addEventListener('keydown', function(event) {
     startMenu.style.display = 'none';
     isStarted = true;
     isPaused = false;
+
+    // TODO: allow client to pick the starting mass/fuel
+    socket.send("fuelMass,8200");
+    socket.send("dryMass,8200");
   }
 });
 
 //Pause Menu
 window.addEventListener('keydown', function(event) {
-
   if (!isStarted) { return; } // no pause menu until we start the game
 
   if (event.code === 'Escape') { // escape key can pause or unpause
@@ -45,6 +48,8 @@ window.addEventListener('keydown', function(event) {
     pauseMenu.style.display = 'none';
     isPaused = false;
   }
+
+  socket.send("isPaused," + isPaused);
 });
 
 // Event listener for when

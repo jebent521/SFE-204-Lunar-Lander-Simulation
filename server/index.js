@@ -7,7 +7,7 @@ const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 
-const TIME_ACCELERATION = 1;
+const TIME_ACCELERATION = 5;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
@@ -36,7 +36,9 @@ const PAUSED = "paused";
 const PLAYING = "playing";
 const GAME_END = "end";
 
+// Useful functions
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const isDigits = /^[0-9\.]+$/;
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -51,7 +53,8 @@ wss.on('connection', async function connection(ws) {
     dry_mass: DRY_MASS,
     isBurning: false,
     health: 100,
-    state: "menu"
+    state: "menu",
+    diedLastTick: false
   };
 
   // Holding variables. These may change many times per tick, 
@@ -60,9 +63,8 @@ wss.on('connection', async function connection(ws) {
     isBurning: false,
     disconnected: false,
     isPaused: false,
-    fuel_mass: INVALID_MASS,
-    dry_mass: INVALID_MASS,
-    restart: false
+    fuelMass: INVALID_MASS,
+    dryMass: INVALID_MASS
   };
 
   // Register events
@@ -71,6 +73,7 @@ wss.on('connection', async function connection(ws) {
 
     if (v == 'true') { v = true; }
     else if (v == 'false') { v = false; }
+    else if (isDigits.test(v)) { v = Number(v); }
 
     if (k in holder) { holder[k] = v }
     else {
@@ -94,15 +97,15 @@ wss.on('connection', async function connection(ws) {
     // If in the menu, move to playing and reset the blackboard once the weight has been recieved
     // If playing, pause at will
     // If paused, unpause at will
-    // If game ended, switch to menu on request and if so, reset the holder
+    // If the game ended last tick, send the statistics, switch to menu and reset the holder
     switch (blackboard.state) {
       case MENU:
         // When ready, start the game and reset the blackboard
-        if (holder.fuel_mass > 0 && holder.dry_mass > 0) { 
+        if (holder.fuelMass > 0 && holder.dryMass > 0) { 
           blackboard.position = 15_000 + LUNAR_RADIUS;
           blackboard.velocity = 0;
-          blackboard.fuel_mass = holder.fuel_mass;
-          blackboard.dry_mass = holder.dry_mass;
+          blackboard.fuel_mass = holder.fuelMass;
+          blackboard.dry_mass = holder.dryMass;
           blackboard.isBurning = false;
           blackboard.health = 100;
           blackboard.state = PLAYING;
@@ -117,14 +120,17 @@ wss.on('connection', async function connection(ws) {
         if (!holder.isPaused) { blackboard.state = PLAYING; }
         break;
       case GAME_END:
-        if (holder.restart) { 
+        if (blackboard.diedLastTick) {
+          ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
+          
           blackboard.state = MENU;
 
           holder.isBurning = false;
           holder.isPaused = false;
-          holder.fuel_mass = INVALID_MASS;
-          holder.dry_mass = INVALID_MASS;
-          holder.restart = false;
+          holder.fuelMass = INVALID_MASS;
+          holder.dryMass = INVALID_MASS;
+          
+          blackboard.diedLastTick = false;
         }
         break;
     }
@@ -207,9 +213,9 @@ function physicsMod(blackboard) {
     }
 
     blackboard.state = GAME_END;
+    blackboard.diedLastTick = true;
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
     statisticsMod.addLanding(blackboard);
-    ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
   }
 
   blackboard.isBurning = isBurning;

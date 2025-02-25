@@ -25,10 +25,10 @@ const StatisticsMod = {
     getCurrentStats: function (blackboard) {
         return {
             attempts: blackboard.attempts,
-            landings: blackboard.landings ?? 0,
+            landings: (blackboard.landings ?? 0) - (blackboard.crashes ?? 0),
             crashes: blackboard.crashes ?? 0,
             highestAltitude: blackboard.highestAltitude,
-            winRate: (blackboard.landings ?? 0) / blackboard.attempts,
+            winRate: 1 - (blackboard.crashes ?? 0) / blackboard.attempts,
             lossRate: (blackboard.crashes ?? 0) / blackboard.attempts
         }
     }
