@@ -2,22 +2,50 @@
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
 
+const pauseMenu = document.getElementById('pauseMenu');
+const startMenu = document.getElementById('startMenu');
+let isStarted = false; // Has the game begun?
+let isPaused = true;   // Is the server running?
+
 window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
+    if(isPaused) return;
     if (key.keyCode === space_bar) {
-      socket.send('thruster on');
+      socket.send('isBurning,true');
     };
   };
 
   window.onkeyup = function (key) {
+    if(isPaused) return;
     if (key.keyCode === space_bar) {
-      socket.send('thruster off');
+      socket.send('isBurning,false');
     };
   }
 };
 
+window.addEventListener('keydown', function(event) {
+  if (event.key === '1' && isPaused) {
+    startMenu.style.display = 'none';
+    isStarted = true;
+    isPaused = false;
+  }
+});
+
+//Pause Menu
+window.addEventListener('keydown', function(event) {
+
+  if (!isStarted) { return; } // no pause menu until we start the game
+
+  if (event.code === 'Escape') { // escape key can pause or unpause
+    isPaused = !isPaused;
+    pauseMenu.style.display = isPaused ? 'flex' : 'none';
+  } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
+    pauseMenu.style.display = 'none';
+    isPaused = false;
+  }
+});
 
 // Event listener for when
 //the WebSocket connection is opened
@@ -81,7 +109,7 @@ socket.onmessage = function (event) {
 // WebSocket connection is closed
 socket.onclose = function (event) {
   // Log a message when disconnected
-  //  from the WebSocket server
+  // from the WebSocket server
   document.getElementById("status").innerHTML = "Connection status: not connected. Try starting the server and refreshing the page.";
   console.log("Disconnected from WebSocket server");
 };
