@@ -88,19 +88,14 @@ wss.on('connection', async function connection(ws) {
   });
 
   // Now that there's a connection, start the server
-  statisticsMod.addAttempt(blackboard);
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
 
     // Process state changes
-    // If in the menu, move to playing and reset the blackboard once the weight has been recieved
-    // If playing, pause at will
-    // If paused, unpause at will
-    // If the game ended last tick, send the statistics, switch to menu and reset the holder
     switch (blackboard.state) {
+      // If in the menu, move to playing and reset the blackboard once the weight has been recieved
       case MENU:
-        // When ready, start the game and reset the blackboard
         if (holder.fuelMass > 0 && holder.dryMass > 0) { 
           blackboard.position = 15_000 + LUNAR_RADIUS;
           blackboard.velocity = 0;
@@ -110,15 +105,21 @@ wss.on('connection', async function connection(ws) {
           blackboard.health = 100;
           blackboard.state = PLAYING;
 
+          statisticsMod.addAttempt(blackboard);
+
           holder.isPaused = false;
         }
         break;
+      // If playing, pause at will
       case PLAYING:
         if (holder.isPaused) { blackboard.state = PAUSED; }
         break;
+      // If paused, unpause at will
       case PAUSED:
         if (!holder.isPaused) { blackboard.state = PLAYING; }
         break;
+      // If the game ended last tick, send the statistics, switch to menu and reset the holder
+      // Then, alert the client so they can reset themselves
       case GAME_END:
         if (blackboard.diedLastTick) {
           ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
@@ -129,6 +130,10 @@ wss.on('connection', async function connection(ws) {
           holder.isPaused = false;
           holder.fuelMass = INVALID_MASS;
           holder.dryMass = INVALID_MASS;
+
+          // Unlike other values, this is ping, not a state change.
+          // The value doesn't matter
+          ws.send(JSON.stringify({diedLastTick:true}));
           
           blackboard.diedLastTick = false;
         }
