@@ -7,6 +7,32 @@ const startMenu = document.getElementById('startMenu');
 let isStarted = false; // Has the game begun?
 let isPaused = true;   // Is the server running?
 
+function stopGame() {
+  startMenu.style.display = 'flex';
+  isStarted = false;
+  isPaused = true;
+}
+
+function startGame() {
+  startMenu.style.display = 'none';
+  isStarted = true;
+  isPaused = false;
+
+  // TODO: allow client to pick the starting mass/fuel
+  socket.send("fuelMass,8200");
+  socket.send("dryMass,8200");
+}
+
+function pauseGame() {
+  pauseMenu.style.display = 'flex';
+  isPaused = true;
+}
+
+function unpauseGame() {
+  pauseMenu.style.display = 'none';
+  isPaused = false;
+}
+
 window.onload = function () {
   var space_bar = 32;
 
@@ -27,13 +53,7 @@ window.onload = function () {
 
 window.addEventListener('keydown', function(event) {
   if (event.key === '1' && isPaused) {
-    startMenu.style.display = 'none';
-    isStarted = true;
-    isPaused = false;
-
-    // TODO: allow client to pick the starting mass/fuel
-    socket.send("fuelMass,8200");
-    socket.send("dryMass,8200");
+    startGame();
   }
 });
 
@@ -50,11 +70,9 @@ window.addEventListener('keydown', function(event) {
   if (!isStarted) { return; } // no pause menu until we start the game
 
   if (event.code === 'Escape') { // escape key can pause or unpause
-    isPaused = !isPaused;
-    pauseMenu.style.display = isPaused ? 'flex' : 'none';
+    (isPaused) ? unpauseGame() : pauseGame();
   } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
-    pauseMenu.style.display = 'none';
-    isPaused = false;
+    unpauseGame();
   }
 
   socket.send("isPaused," + isPaused);
@@ -110,6 +128,9 @@ socket.onmessage = function (event) {
           }
           stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
+        break;
+      case "diedLastTick":
+        stopGame();
         break;
       // Add more cases as needed for other keys
       default:
