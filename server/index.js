@@ -1,4 +1,4 @@
-const StatisticsMod = require('./modules/statistics');
+const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
@@ -28,31 +28,10 @@ const WebSocket = require('ws');
 
 const wss = new WebSocket.Server({ port: 8080 });
 
-var isDead = true;
-
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
-  var isBurning = false;
-  isDead = false;
 
-  // Register events
-  ws.on('message', function incoming(message) {
-    if (message == 'thruster on') {
-      isBurning = true;
-    } else if (message == 'thruster off') {
-      isBurning = false;
-    } else {
-      console.log(`Unknown message: ${message}`);
-      ws.send(`Unknown message: ${message}`);
-    }
-  });
-
-  ws.on('close', function () {
-      console.log('Client disconnected');
-      isDead = true;
-  });
-
-  // Now that there's a connection, start the server
+  // Blackboard. These values are updated once per tick.
   var blackboard = {
     position: 15_000 + LUNAR_RADIUS,
     velocity: 0,
@@ -60,16 +39,47 @@ wss.on('connection', async function connection(ws) {
     isBurning: false,
     health: 100
   };
+
+  // Holding variables. These may change many times per tick, 
+  // but only get copied to the blackboard once per tick
+  var holder = {
+    isBurning: false,
+    disconnected: false,
+    isPaused: false
+  };
+
+  // Register events
+  ws.on('message', function incoming(message) {
+    let [k, v] = message.toString().split(",");
+
+    if (v == 'true') { v = true; }
+    else if (v == 'false') { v = false; }
+
+    if (k in holder) { holder[k] = v }
+    else {
+      console.log(`Unknown message: ${message}`);
+      ws.send(`Unknown message: ${message}`);
+    }
+  });
+
+  ws.on('close', function () {
+      console.log('Client disconnected');
+      holder.disconnected = true;
+  });
+
+  // Now that there's a connection, start the server
   console.log(blackboard);
-  StatisticsMod.addAttempt(blackboard);
+  statisticsMod.addAttempt(blackboard);
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
 
-    // TODO: Run modules
-    controlsMod(blackboard, isBurning);
-    physicsMod(blackboard);
-    StatisticsMod.recordHighestAltitude(blackboard);
+    if (!holder.isPaused) {
+      controlsMod(blackboard, holder.isBurning);
+      physicsMod(blackboard);
+      statisticsMod.recordHighestAltitude(blackboard);
+    }
+
     loggingMod(blackboard);
     communicationMod(blackboard, ws);
 
@@ -77,12 +87,13 @@ wss.on('connection', async function connection(ws) {
     var elapsed = Number(process.hrtime.bigint() - time)
     elapsed = elapsed / NS_PER_MS;
     if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
-    else { 
+    else {
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
-      if (isDead) { break; } // TODO: Add a way to restart
+      if (holder.disconnected) { break; }
     }
   }
-  ws.send(JSON.stringify({stats: StatisticsMod.getCurrentStats(blackboard)}));
+
+  ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
 });
 
 /**
@@ -132,15 +143,16 @@ function physicsMod(blackboard) {
 
   altitude = position - LUNAR_RADIUS;
 
-  if (altitude < 0){
+  if (altitude <= 0){
     if (velocity < KILL_VEL) {
       blackboard.health = 0;
       isDead = true;
-      StatisticsMod.addCrash(blackboard);
+      statisticsMod.addCrash(blackboard);
     }
     else if (velocity < WARN_VEL) {
       blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100);
-      StatisticsMod.addLanding(blackboard);
+      // FIXME: completely safe landings don't register
+      statisticsMod.addLanding(blackboard);
     }
 
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
