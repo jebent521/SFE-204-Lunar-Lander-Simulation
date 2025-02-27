@@ -6,11 +6,16 @@ const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
 let isStarted = false; // Has the game begun?
 let isPaused = true;   // Is the server running?
+toggleAnimation(); // First toggle to have the stars not move in the beginning
+let run_once = false; // toggle so that pressing 1 only untoggles star animation after the start screen
+// and not anytime you press 1.
 
 function stopGame() {
   startMenu.style.display = 'flex';
   isStarted = false;
   isPaused = true;
+
+  toggleAnimation();
 }
 
 function startGame() {
@@ -21,16 +26,20 @@ function startGame() {
   // TODO: allow client to pick the starting mass/fuel
   socket.send("fuelMass,8200");
   socket.send("dryMass,8200");
+
+  toggleAnimation();
 }
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
   isPaused = true;
+  toggleAnimation();
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
   isPaused = false;
+  toggleAnimation();
 }
 
 window.onload = function () {
@@ -53,23 +62,7 @@ window.onload = function () {
 
 window.addEventListener('keydown', function(event) {
   if (event.key === '1' && isPaused) {
-    startMenu.style.display = 'none';
-    isStarted = true;
-    isPaused = false;
-  }
-});
-
-window.addEventListener('keydown', function(event) {
-  if (event.key === '1' && isPaused) {
     startGame();
-  }
-});
-
-window.addEventListener('keydown', function(event) {
-  if (event.key === '1' && isPaused) {
-    startMenu.style.display = 'none';
-    isStarted = true;
-    isPaused = false;
   }
 });
 

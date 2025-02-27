@@ -1,4 +1,3 @@
-
 function generateBoxShadows(numShadows, xOffsetRange, yOffsetRange, color) {
   const boxShadows = [];
   for (let i = 0; i < numShadows; i++) {
