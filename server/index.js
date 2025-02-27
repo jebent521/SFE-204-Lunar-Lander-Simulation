@@ -7,7 +7,7 @@ const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 
-const TIME_ACCELERATION = 5;
+const TIME_ACCELERATION = 1;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
