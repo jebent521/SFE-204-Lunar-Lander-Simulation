@@ -17,12 +17,16 @@ var isConnected = false;
 
 function stopGame() {
   restartMenu.style.display = 'flex';
+  toggleAnimation();
+
   gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
   restartMenu.style.display = 'none';
+  toggleAnimation();
+  
   gameState = PLAYING;
 
   // TODO: allow client to pick the starting mass/fuel
@@ -35,6 +39,7 @@ function startGame() {
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
+  toggleAnimation();
 
   gameState = PAUSED;
   socket.send("isPaused,true");
@@ -42,6 +47,7 @@ function pauseGame() {
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
+  toggleAnimation();
 
   gameState = PLAYING;
   socket.send("isPaused,false");
