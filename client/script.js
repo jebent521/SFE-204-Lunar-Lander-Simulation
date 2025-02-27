@@ -98,6 +98,10 @@ socket.onmessage = function (event) {
           stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
         break;
+      case "message":
+        const message = document.getElementById("message");
+        message.innerHTML = data[key];
+        break;
       // Add more cases as needed for other keys
       default:
         console.log(`Unknown key: ${key}`);
