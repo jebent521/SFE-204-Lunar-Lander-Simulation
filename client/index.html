@@ -13,7 +13,6 @@
 </head>
 
 <body>
-    <script src="script.js"></script>
     <div class="Stars"></div>
     <div class="rows">
         <div class="column" id="Variables_column">
@@ -70,7 +69,21 @@
         <div id="stars3" class="starAnimation" style="z-index: 0;"></div>
     </div>
     <script src="star.js"></script>
+    <!-- Pause Menu: takes up whole screen, black background, tells you to hit enter to leave -->
+    <div id="pauseMenu" class="menu">
+        <div style="text-align: center;">
+            <h2>Paused</h2>
+            <p>Press <strong>Enter</strong> to resume.</p>
+        </div>
+    </div>
+    <div id="startMenu" class="menu" style="display: flex">
+        <div style="text-align: center;">
+            <h2>Eclipse</h2>
+            <p>Press <strong>1</strong> to begin.</p>
+        </div>
+    </div>
     <footer></footer>
+    <script src="script.js"></script>
 </body>
 
 </html>
