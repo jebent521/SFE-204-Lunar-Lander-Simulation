@@ -18,10 +18,14 @@ the blackboard.
 ### Setting up your environment
 Install the proper packages with `npm i`
 
-### Starting the server
-From the server directory, run `nodemon .`
+The server relies on the `fortune` command, which you might need to install
+with `sudo apt install fortune-mod`.
 
-If you do not wish to enable hot reloading (crazy), run `node .` instead.
+### Starting the server
+From the project root, run
+```sh
+nodemon server
+```
 
 ### Running the client
 Run the client app by opening `index.html` in your browser or

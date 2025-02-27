@@ -1,18 +1,20 @@
+var exec = require('child_process').exec;
+
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 
-const TIME_ACCELERATION = 1;
+const TIME_ACCELERATION = 100;
 
 const NS_PER_MS = 1_000_000;
 const MS_PER_TICK = 50;
 
 const TIME_STEP = MS_PER_TICK / 1_000;
 const G_0 = 9.80665;
-const LUNAR_MASS = 7.346 * 10**22;
+const LUNAR_MASS = 7.346 * 10 ** 22;
 const LUNAR_RADIUS = 1_737_400;
-const G = 6.6743 * 10**-11;
+const G = 6.6743 * 10 ** -11;
 
 const FUEL_MASS = 8_200;
 const DRY_MASS = 8_200;
@@ -92,8 +94,21 @@ wss.on('connection', async function connection(ws) {
       if (holder.disconnected) { break; }
     }
   }
-
-  ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
+  exec('fortune death-messages/crash',
+    function (error, stdout, stderr) {
+      let deathMessage;
+      if (error || stderr) {
+        console.error(error);
+        console.error(stderr);
+        deathMessage = 'crashed';
+      } else {
+        deathMessage = `You ${stdout}`;
+      }
+      ws.send(JSON.stringify({
+        stats: statisticsMod.getCurrentStats(blackboard),
+        message: deathMessage
+      }));
+    });
 });
 
 /**
@@ -123,7 +138,7 @@ function physicsMod(blackboard) {
   var mass = blackboard.mass;
   var isBurning = blackboard.isBurning;
 
-  let lunarG = G * LUNAR_MASS / (position**2);
+  let lunarG = G * LUNAR_MASS / (position ** 2);
   var acceleration = -lunarG;
 
   if (isBurning) {
