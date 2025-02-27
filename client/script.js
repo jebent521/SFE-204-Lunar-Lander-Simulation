@@ -66,6 +66,10 @@ window.addEventListener('keydown', function(event) {
     startMenu.style.display = 'none';
     isStarted = true;
     isPaused = false;
+    if (!run_once) {
+      toggleAnimation();
+      run_once = true;
+    }
   }
 });
 
@@ -76,10 +80,12 @@ window.addEventListener('keydown', function(event) {
 
   if (event.code === 'Escape') { // escape key can pause or unpause
     isPaused = !isPaused;
+    toggleAnimation();
     pauseMenu.style.display = isPaused ? 'flex' : 'none';
   } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
     pauseMenu.style.display = 'none';
     isPaused = false;
+    toggleAnimation();
   }
 });
 
