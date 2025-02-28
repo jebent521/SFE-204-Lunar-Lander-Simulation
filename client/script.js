@@ -26,8 +26,11 @@ function startGame() {
   gameState = PLAYING;
 
   // TODO: allow client to pick the starting mass/fuel
+  const weightSelect = document.getElementById("cars")
   socket.send("fuelMass,8200");
-  socket.send("dryMass,8200");
+  socket.send("dryMass," + weightSelect.value);
+
+  toggleAnimation();
 }
 
 function pauseGame() {
