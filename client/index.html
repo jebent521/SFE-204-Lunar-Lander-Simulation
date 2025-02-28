@@ -10,6 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
     <title>Lunar Lander Simulator</title>
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        #wesselVessel {
+            position: absolute;
+            bottom: 0; /*start postion*/
+            left: 50%; /*x value center*/
+            width:10px; /*size of lander*/
+        }
+    </style>
 </head>
 
 <body>
@@ -57,6 +66,10 @@
             </table>
         </div>
         <div class="column" id="Lander_column"></div>
+
+        <img id="wesselVessel" src="lander.png"> <!-- image of the wessel vessel, rn its the wack png-->
+        </div>
+
         <div class="column" id="Additional_UI">
             <div id="status"></div>
             <table id="stats"></table>

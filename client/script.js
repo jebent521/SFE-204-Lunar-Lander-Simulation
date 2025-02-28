@@ -2,22 +2,50 @@
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
 
+const pauseMenu = document.getElementById('pauseMenu');
+const startMenu = document.getElementById('startMenu');
+let isStarted = false; // Has the game begun?
+let isPaused = true;   // Is the server running?
+
 window.onload = function () {
   var space_bar = 32;
 
   window.onkeydown = function (key) {
+    if(isPaused) return;
     if (key.keyCode === space_bar) {
       socket.send('thruster on');
     };
   };
 
   window.onkeyup = function (key) {
+    if(isPaused) return;
     if (key.keyCode === space_bar) {
       socket.send('thruster off');
     };
   }
 };
 
+window.addEventListener('keydown', function(event) {
+  if (event.key === '1' && isPaused) {
+    startMenu.style.display = 'none';
+    isStarted = true;
+    isPaused = false;
+  }
+});
+
+//Pause Menu
+window.addEventListener('keydown', function(event) {
+
+  if (!isStarted) { return; } // no pause menu until we start the game
+
+  if (event.code === 'Escape') { // escape key can pause or unpause
+    isPaused = !isPaused;
+    pauseMenu.style.display = isPaused ? 'flex' : 'none';
+  } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
+    pauseMenu.style.display = 'none';
+    isPaused = false;
+  }
+});
 
 // Event listener for when
 //the WebSocket connection is opened
@@ -37,8 +65,20 @@ socket.onmessage = function (event) {
   for (let key in data) {
     switch (key) {
       case "altitude":
-        const altitude = document.getElementById("altitude");
-        altitude.innerHTML = `${data[key].toFixed(2)} m`;
+        const altitude = data[key]; // Get the altitude value
+        const altitudeDisplay = document.getElementById("altitude");
+        altitudeDisplay.innerHTML = `${altitude.toFixed(2)} m`;
+
+        // Calculate the Y position of the wesselVessel based on altitude
+        const screenHeight = window.innerHeight;  // Get the height of the browser window
+        const wesselVessel = document.getElementById("wesselVessel");
+
+        // Adjust the scaling factor for altitude if necessary
+        const scaledY = screenHeight - (altitude / 100); // Adjust this factor based on your scale
+
+        // Update the Y position of the wesselVessel
+        wesselVessel.style.bottom = `${scaledY}px`;
+
         break;
       case "velocity":
         const velocity = document.getElementById("velocity");
