@@ -86,6 +86,7 @@ wss.on('connection', async function connection(ws) {
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
+    // TODO: remove this when stateful is merged
     if (blackboard.health <= 0) break;
 
     // Wait for next tick
