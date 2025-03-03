@@ -4,6 +4,7 @@ const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
+const messages = require('./modules/messages');
 
 const TIME_ACCELERATION = 100;
 
@@ -72,6 +73,7 @@ wss.on('connection', async function connection(ws) {
   // Now that there's a connection, start the server
   console.log(blackboard);
   statisticsMod.addAttempt(blackboard);
+  let numTicks = 0;
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
@@ -82,8 +84,9 @@ wss.on('connection', async function connection(ws) {
       statisticsMod.recordHighestAltitude(blackboard);
     }
 
-    loggingMod(blackboard);
+    loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
+    if (blackboard.health <= 0) break;
 
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
@@ -93,22 +96,14 @@ wss.on('connection', async function connection(ws) {
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
       if (holder.disconnected) { break; }
     }
+
+    ++numTicks;
   }
-  exec('fortune death-messages/crash',
-    function (error, stdout, stderr) {
-      let deathMessage;
-      if (error || stderr) {
-        console.error(error);
-        console.error(stderr);
-        deathMessage = 'crashed';
-      } else {
-        deathMessage = `You ${stdout}`;
-      }
-      ws.send(JSON.stringify({
-        stats: statisticsMod.getCurrentStats(blackboard),
-        message: deathMessage
-      }));
-    });
+
+  ws.send(JSON.stringify({
+    stats: statisticsMod.getCurrentStats(blackboard),
+    message: `"You ${messages.death[Math.floor(Math.random() * messages.death.length)]}"`
+  }));
 });
 
 /**
