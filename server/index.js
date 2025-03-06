@@ -6,7 +6,7 @@ const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 const messages = require('./modules/messages');
 
-const TIME_ACCELERATION = 100;
+const TIME_ACCELERATION = 1;
 
 const NS_PER_MS = 1_000_000;
 const MS_PER_TICK = 50;
