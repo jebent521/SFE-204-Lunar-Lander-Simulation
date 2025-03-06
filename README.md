@@ -18,9 +18,6 @@ the blackboard.
 ### Setting up your environment
 Install the proper packages with `npm i`
 
-The server relies on the `fortune` command, which you might need to install
-with `sudo apt install fortune-mod`.
-
 ### Starting the server
 From the project root, run
 ```sh

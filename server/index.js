@@ -1,16 +1,13 @@
 // npm modules
 const WebSocket = require('ws');
 
-// Custom modules
-var exec = require('child_process').exec;
-
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 const messages = require('./modules/messages');
 
-const TIME_ACCELERATION = 100;
+const TIME_ACCELERATION = 1;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
