@@ -1,7 +1,10 @@
+var exec = require('child_process').exec;
+
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
+const messages = require('./modules/messages');
 
 const TIME_ACCELERATION = 1;
 
@@ -10,9 +13,9 @@ const MS_PER_TICK = 50;
 
 const TIME_STEP = MS_PER_TICK / 1_000;
 const G_0 = 9.80665;
-const LUNAR_MASS = 7.346 * 10**22;
+const LUNAR_MASS = 7.346 * 10 ** 22;
 const LUNAR_RADIUS = 1_737_400;
-const G = 6.6743 * 10**-11;
+const G = 6.6743 * 10 ** -11;
 
 const FUEL_MASS = 8_200;
 const DRY_MASS = 8_200;
@@ -70,6 +73,7 @@ wss.on('connection', async function connection(ws) {
   // Now that there's a connection, start the server
   console.log(blackboard);
   statisticsMod.addAttempt(blackboard);
+  let numTicks = 0;
   while (true) {
     // Tick start
     var time = process.hrtime.bigint();
@@ -80,8 +84,10 @@ wss.on('connection', async function connection(ws) {
       statisticsMod.recordHighestAltitude(blackboard);
     }
 
-    loggingMod(blackboard);
+    loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
+    // TODO: remove this when stateful is merged
+    if (blackboard.health <= 0) break;
 
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
@@ -91,9 +97,14 @@ wss.on('connection', async function connection(ws) {
       await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
       if (holder.disconnected) { break; }
     }
+
+    ++numTicks;
   }
 
-  ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
+  ws.send(JSON.stringify({
+    stats: statisticsMod.getCurrentStats(blackboard),
+    message: `"You ${messages.death[Math.floor(Math.random() * messages.death.length)]}"`
+  }));
 });
 
 /**
@@ -123,7 +134,7 @@ function physicsMod(blackboard) {
   var mass = blackboard.mass;
   var isBurning = blackboard.isBurning;
 
-  let lunarG = G * LUNAR_MASS / (position**2);
+  let lunarG = G * LUNAR_MASS / (position ** 2);
   var acceleration = -lunarG;
 
   if (isBurning) {
