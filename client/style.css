@@ -80,6 +80,10 @@ td {
   text-align: right;
 }
 
+#stats {
+  float: right;
+}
+
 .menu {
   display: none;
   position: fixed; 
