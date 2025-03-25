@@ -41,21 +41,7 @@
                     <td>Health</td>
                     <td><var id="health"></var></td>
                 </tr>
-                <!--<tr>
-                        <td>Time</td>
-                        <td><var>hehe</var></td>
-                    </tr>
-                    <tr>
-                        <td>Weight</td>
-                        <td><var>hehe</var></td>
-                    </tr>
-                    <tr>
-                        <td>Acceleration</td>
-                        <td><var>hehe</var></td>
-                    </tr>-->
             </table>
-            <!--Remove this input after Scrum report: is only meant for proof of concept.-->
-            <input type="button" value="Start/Stop Stars" onclick="toggleAnimation()">
         </div>
         <div class="column" id="Lander_column"></div>
         <div class="column" id="Additional_UI">
@@ -81,6 +67,14 @@
         <div style="text-align: center;">
             <h2>Eclipse</h2>
             <p>Press <strong>1</strong> to begin.</p>
+        </div>
+    </div>
+    <div id="restartMenu" class="menu">
+        <div style="text-align: center;">
+            <h2 id="message">Game over</h2>
+            <br>
+            <table id="stats"></table>
+            <p>Press <strong>1</strong> to restart.</p>
         </div>
     </div>
     <footer></footer>

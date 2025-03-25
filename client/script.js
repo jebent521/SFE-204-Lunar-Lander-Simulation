@@ -4,6 +4,7 @@ const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
+const restartMenu = document.getElementById('restartMenu');
 
 // Game states
 const NOT_STARTED = 'not started';
@@ -15,12 +16,21 @@ var gameState = NOT_STARTED;
 var isConnected = false;
 
 function stopGame() {
-  startMenu.style.display = 'flex';
+  restartMenu.style.display = 'flex';
   gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
+  gameState = PLAYING;
+
+  // TODO: allow client to pick the starting mass/fuel
+  socket.send("fuelMass,8200");
+  socket.send("dryMass,8200");
+}
+
+function restartGame() {
+  restartMenu.style.display = 'none';
   gameState = PLAYING;
 
   // TODO: allow client to pick the starting mass/fuel
@@ -51,7 +61,7 @@ window.onload = function () {
     switch (gameState) {
       case NOT_STARTED:
         switch (event.code) {
-          case 'Escape':
+          case 'Space':
           case 'Enter':
           case 'Digit1':
             if (isConnected) {
@@ -89,7 +99,7 @@ window.onload = function () {
           case 'Escape':
           case 'Enter':
           case 'Digit1':
-            startGame();
+            restartGame();
             break;
           default:
             break;
@@ -147,6 +157,9 @@ socket.onmessage = function (event) {
           let data = statsData[statKey];
           if (statKey.toLowerCase().includes('altitude')) {
             data = `${data} m`;
+          }
+          if (statKey.toLowerCase().includes('rate')) {
+            data = `${data * 100}%`;
           }
           statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
