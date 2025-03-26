@@ -4,19 +4,26 @@ const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
-let isStarted = false; // Has the game begun?
-let isPaused = true;   // Is the server running?
+const restartMenu = document.getElementById('restartMenu');
+
+// Game states
+const NOT_STARTED = 'not started';
+const PLAYING = 'playing';
+const PAUSED = 'paused';
+const STOPPED = 'stopped';
+
+var gameState = NOT_STARTED;
+var isConnected = false;
 
 function stopGame() {
-  startMenu.style.display = 'flex';
-  isStarted = false;
-  isPaused = true;
+  restartMenu.style.display = 'flex';
+  gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
-  isStarted = true;
-  isPaused = false;
+  restartMenu.style.display = 'none';
+  gameState = PLAYING;
 
   // TODO: allow client to pick the starting mass/fuel
   socket.send("fuelMass,8200");
@@ -25,99 +32,96 @@ function startGame() {
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
-  isPaused = true;
+
+  gameState = PAUSED;
+  socket.send("isPaused,true");
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
-  isPaused = false;
+
+  gameState = PLAYING;
+  socket.send("isPaused,false");
 }
 
 window.onload = function () {
-  var space_bar = 32;
-
-  window.onkeydown = function (key) {
-    if(isPaused) return;
-    if (key.keyCode === space_bar) {
-      socket.send('isBurning,true');
-    };
-  };
-
-  window.onkeyup = function (key) {
-    if(isPaused) return;
-    if (key.keyCode === space_bar) {
+  window.onkeyup = (event) => {
+    if (event.code === 'Space') {
       socket.send('isBurning,false');
-    };
-  }
-};
-
-window.addEventListener('keydown', function(event) {
-  if (event.key === '1' && isPaused) {
-    startGame();
-  }
-});
-
-window.addEventListener('keydown', function(event) {
-  if (event.key === '1' && isPaused) {
-    startMenu.style.display = 'none';
-    isStarted = true;
-    isPaused = false;
-  }
-});
-
-//Pause Menu
-window.addEventListener('keydown', function(event) {
-  if (!isStarted) { return; } // no pause menu until we start the game
-
-  if (event.code === 'Escape') { // escape key can pause or unpause
-    (isPaused) ? unpauseGame() : pauseGame();
-  } else if (event.code === 'Enter' && isPaused) { // enter only unpauses 
-    unpauseGame();
+    }
   }
 
-  socket.send("isPaused," + isPaused);
-});
-
-// Event listener for when
-//the WebSocket connection is opened
-socket.onopen = function (event) {
-  // Alert the user that they are
-  // connected to the WebSocket server
-  document.getElementById("status").innerHTML = "Connection status: connected";
-};
+  window.addEventListener('keydown', (event) => {
+    let code = event.code;
+    switch (gameState) {
+      case NOT_STARTED:
+      case STOPPED:
+        if ((code == 'Escape' || code == 'Enter' || code == 'Digit1')
+            && isConnected) {
+            startGame();
+        }
+        break;
+      case PLAYING:
+        switch (event.code) {
+          case 'Space':
+            socket.send('isBurning,true');
+            break;
+          case 'Escape':
+            pauseGame();
+          default:
+            break;
+        }
+        break;
+      case PAUSED:
+        if (code == 'Escape' || code == 'Enter' || code == 'Digit1') {
+            unpauseGame();
+        }
+        break;
+      default:
+        console.error('Invalid game state detected:', gameState);
+        return;
+    }
+  });  
+}
 
 // Event listener for when a message
 //  is received from the server
 socket.onmessage = function (event) {
   // Parse the received JSON message
-  let data = JSON.parse(event.data);
+  var data;
+  try {
+    data = JSON.parse(event.data);
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return;
+  }
 
   // Switch over the keys in the JSON object
-  for (let key in data) {
+  for (const key in data) {
     switch (key) {
       case "altitude":
         const altitude = document.getElementById("altitude");
-        altitude.innerHTML = `${data[key].toFixed(2)} m`;
+        altitude.textContent = `${data[key].toFixed(2)} m`;
         break;
       case "velocity":
         const velocity = document.getElementById("velocity");
-        velocity.innerHTML = `${data[key].toFixed(2)} m/s`;
+        velocity.textContent = `${data[key].toFixed(2)} m/s`;
         break;
       case "mass":
         const mass = document.getElementById("mass");
-        mass.innerHTML = `${data[key].toFixed()} kg`;
+        mass.textContent = `${data[key].toFixed()} kg`;
         break;
       case "isBurning":
         const thrusters = document.getElementById("thrusters");
-        thrusters.innerHTML = data[key] ? "ON" : "OFF";
+        thrusters.textContent = data[key] ? "ON" : "OFF";
         break;
       case "health":
         const health = document.getElementById("health");
-        health.innerHTML = data[key].toFixed();
+        health.textContent = data[key].toFixed();
         break;
       case "stats":
         const stats = document.getElementById("stats");
-        stats.innerHTML = "<tr><th>Statistic</th><th>Value</th></tr>";
+        var statsHtml = "<tr><th>Statistic</th><th>Value</th></tr>";
         let statsData = data[key];
         for (let statKey in statsData) {
           const result = statKey.replace(/([A-Z])/g, " $1");
@@ -126,8 +130,12 @@ socket.onmessage = function (event) {
           if (statKey.toLowerCase().includes('altitude')) {
             data = `${data} m`;
           }
-          stats.innerHTML += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
+          if (statKey.toLowerCase().includes('rate')) {
+            data = `${data * 100}%`;
+          }
+          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
+        stats.innerHTML = statsHtml;
         break;
       case "diedLastTick":
         stopGame();
@@ -138,16 +146,26 @@ socket.onmessage = function (event) {
         break;
       // Add more cases as needed for other keys
       default:
-        console.log(`Unknown key: ${key}`);
+        console.error(`Unknown key: ${key}`);
     }
   }
 };
 
+// Event listener for when
+//the WebSocket connection is opened
+socket.onopen = (_) => {
+  // Alert the user that they are
+  // connected to the WebSocket server
+  isConnected = true;
+  document.getElementById("status").textContent = "Connection status: connected";
+};
+
 // Event listener for when the
 // WebSocket connection is closed
-socket.onclose = function (event) {
+socket.onclose = (_) => {
   // Log a message when disconnected
   // from the WebSocket server
-  document.getElementById("status").innerHTML = "Connection status: not connected. Try starting the server and refreshing the page.";
+  isConnected = false;
+  document.getElementById("status").textContent = "Connection status: not connected. Try starting the server and refreshing the page.";
   console.log("Disconnected from WebSocket server");
 };
