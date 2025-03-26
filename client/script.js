@@ -26,31 +26,31 @@ function startGame() {
   startMenu.style.display = 'none';
   restartMenu.style.display = 'none';
   toggleAnimation();
-  
-  gameState = PLAYING;
 
   // TODO: allow client to pick the starting mass/fuel
   const weightSelect = document.getElementById("cars")
   socket.send("fuelMass,8200");
   socket.send("dryMass," + weightSelect.value);
 
-  toggleAnimation();
+  gameState = PLAYING;
 }
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
   toggleAnimation();
 
-  gameState = PAUSED;
   socket.send("isPaused,true");
+
+  gameState = PAUSED;
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
   toggleAnimation();
 
-  gameState = PLAYING;
   socket.send("isPaused,false");
+
+  gameState = PLAYING;
 }
 
 const startKeys = ['Escape', 'Enter', 'Digit1'];
