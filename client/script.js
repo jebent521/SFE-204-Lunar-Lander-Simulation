@@ -22,14 +22,6 @@ function stopGame() {
 
 function startGame() {
   startMenu.style.display = 'none';
-  gameState = PLAYING;
-
-  // TODO: allow client to pick the starting mass/fuel
-  socket.send("fuelMass,8200");
-  socket.send("dryMass,8200");
-}
-
-function restartGame() {
   restartMenu.style.display = 'none';
   gameState = PLAYING;
 
@@ -40,12 +32,14 @@ function restartGame() {
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
+
   gameState = PAUSED;
   socket.send("isPaused,true");
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
+
   gameState = PLAYING;
   socket.send("isPaused,false");
 }
@@ -58,18 +52,13 @@ window.onload = function () {
   }
 
   window.addEventListener('keydown', (event) => {
+    let code = event.code;
     switch (gameState) {
       case NOT_STARTED:
-        switch (event.code) {
-          case 'Space':
-          case 'Enter':
-          case 'Digit1':
-            if (isConnected) {
-              startGame()
-            }
-            break;
-          default:
-            break;
+      case STOPPED:
+        if ((code == 'Escape' || code == 'Enter' || code == 'Digit1')
+            && isConnected) {
+            startGame();
         }
         break;
       case PLAYING:
@@ -84,25 +73,8 @@ window.onload = function () {
         }
         break;
       case PAUSED:
-        switch (event.code) {
-          case 'Escape':
-          case 'Enter':
-          case 'Digit1':
+        if (code == 'Escape' || code == 'Enter' || code == 'Digit1') {
             unpauseGame();
-            break;
-          default:
-            break;
-        }
-        break;
-      case STOPPED:
-        switch (event.code) {
-          case 'Escape':
-          case 'Enter':
-          case 'Digit1':
-            restartGame();
-            break;
-          default:
-            break;
         }
         break;
       default:
