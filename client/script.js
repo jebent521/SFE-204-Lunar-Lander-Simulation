@@ -132,6 +132,10 @@ socket.onmessage = function (event) {
       case "diedLastTick":
         stopGame();
         break;
+      case "message":
+        const message = document.getElementById("message");
+        message.innerHTML = data[key];
+        break;
       // Add more cases as needed for other keys
       default:
         console.log(`Unknown key: ${key}`);

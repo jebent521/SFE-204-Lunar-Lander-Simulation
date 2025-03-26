@@ -19,9 +19,10 @@ the blackboard.
 Install the proper packages with `npm i`
 
 ### Starting the server
-From the server directory, run `nodemon .`
-
-If you do not wish to enable hot reloading (crazy), run `node .` instead.
+From the project root, run
+```sh
+nodemon server
+```
 
 ### Running the client
 Run the client app by opening `index.html` in your browser or
