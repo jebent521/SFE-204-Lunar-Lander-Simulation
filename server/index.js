@@ -7,7 +7,7 @@ const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 const messages = require('./modules/messages');
 
-const TIME_ACCELERATION = 1;
+const TIME_ACCELERATION = 100;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
@@ -88,8 +88,6 @@ wss.on('connection', async function connection(ws) {
   });
 
   // Now that there's a connection, start the server
-  console.log(blackboard);
-  statisticsMod.addAttempt(blackboard);
   let numTicks = 0;
   while (true) {
     // Tick start
@@ -125,7 +123,10 @@ wss.on('connection', async function connection(ws) {
       // Then, alert the client so they can reset themselves
       case GAME_END:
         if (blackboard.diedLastTick) {
-          ws.send(JSON.stringify({stats: statisticsMod.getCurrentStats(blackboard)}));
+          ws.send(JSON.stringify({
+            stats: statisticsMod.getCurrentStats(blackboard),
+            message: `"You ${messages.death[Math.floor(Math.random() * messages.death.length)]}"`
+          }));
           
           blackboard.state = MENU;
 
@@ -151,8 +152,6 @@ wss.on('connection', async function connection(ws) {
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
-    // TODO: remove this when stateful is merged
-    if (blackboard.health <= 0) break;
 
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
@@ -165,11 +164,6 @@ wss.on('connection', async function connection(ws) {
 
     ++numTicks;
   }
-
-  ws.send(JSON.stringify({
-    stats: statisticsMod.getCurrentStats(blackboard),
-    message: `"You ${messages.death[Math.floor(Math.random() * messages.death.length)]}"`
-  }));
 });
 
 /**

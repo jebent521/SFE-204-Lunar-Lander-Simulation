@@ -131,6 +131,7 @@ socket.onmessage = function (event) {
         break;
       case "diedLastTick":
         stopGame();
+        break;
       case "message":
         const message = document.getElementById("message");
         message.innerHTML = data[key];
