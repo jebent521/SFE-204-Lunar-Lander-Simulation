@@ -135,6 +135,8 @@ socket.onmessage = (event) => {
           statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
         stats.innerHTML = statsHtml;
+
+        document.getElementById("statsDiv").style.display = "flex";
         break;
       case "diedLastTick":
         stopGame();
