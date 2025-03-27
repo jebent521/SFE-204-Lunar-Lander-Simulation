@@ -44,49 +44,41 @@ function unpauseGame() {
   socket.send("isPaused,false");
 }
 
-window.onload = function () {
-  window.onkeyup = (event) => {
-    if (event.code === 'Space') {
-      socket.send('isBurning,false');
-    }
-  }
+const startKeys = ['Escape', 'Enter', 'Digit1'];
+const pauseKey = 'Escape';
+const thrusterKey = 'Space';
 
-  window.addEventListener('keydown', (event) => {
-    let code = event.code;
+window.onload = () => {
+  window.onkeydown = (event) => {
+    const code = event.code;
     switch (gameState) {
       case NOT_STARTED:
       case STOPPED:
-        if ((code == 'Escape' || code == 'Enter' || code == 'Digit1')
-            && isConnected) {
-            startGame();
-        }
+        if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        switch (event.code) {
-          case 'Space':
-            socket.send('isBurning,true');
-            break;
-          case 'Escape':
-            pauseGame();
-          default:
-            break;
-        }
+        if (code == thrusterKey) socket.send('isBurning,true');
+        if (code == pauseKey) pauseGame();
         break;
       case PAUSED:
-        if (code == 'Escape' || code == 'Enter' || code == 'Digit1') {
-            unpauseGame();
-        }
+        if (startKeys.includes(code)) unpauseGame();
         break;
       default:
-        console.error('Invalid game state detected:', gameState);
+        console.error(`Invalid game state detected: ${gameState}`);
         return;
     }
-  });  
+  };
+
+  window.onkeyup = (event) => {
+    if (event.code === thrusterKey) {
+      socket.send('isBurning,false');
+    }
+  }
 }
 
 // Event listener for when a message
 //  is received from the server
-socket.onmessage = function (event) {
+socket.onmessage = (event) => {
   // Parse the received JSON message
   var data;
   try {
