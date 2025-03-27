@@ -4,7 +4,6 @@ const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
-const restartMenu = document.getElementById('restartMenu');
 
 // Game states
 const NOT_STARTED = 'not started';
@@ -16,16 +15,15 @@ var gameState = NOT_STARTED;
 var isConnected = false;
 
 function stopGame() {
-  restartMenu.style.display = 'flex';
-  toggleAnimation();
+  startMenu.style.display = 'flex';
+  setAnimate(false);
 
   gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
-  restartMenu.style.display = 'none';
-  toggleAnimation();
+  setAnimate(true);
 
   // TODO: allow client to pick the starting mass/fuel
   const weightSelect = document.getElementById("cars")
@@ -37,7 +35,7 @@ function startGame() {
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
-  toggleAnimation();
+  setAnimate(false);
 
   socket.send("isPaused,true");
 
@@ -46,7 +44,7 @@ function pauseGame() {
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
-  toggleAnimation();
+  setAnimate(true);
 
   socket.send("isPaused,false");
 
@@ -142,7 +140,7 @@ socket.onmessage = (event) => {
         stopGame();
         break;
       case "message":
-        const message = document.getElementById("message");
+        const message = document.getElementById("menuTitle");
         message.innerHTML = data[key];
         break;
       // Add more cases as needed for other keys

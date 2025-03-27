@@ -81,7 +81,8 @@ td {
 }
 
 #stats {
-  float: right;
+  margin: auto;
+  padding-top: 5px;
 }
 
 .menu {

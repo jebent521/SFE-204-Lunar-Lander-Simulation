@@ -46,8 +46,8 @@
         <div class="column" id="Lander_column"></div>
         <div class="column" id="Additional_UI">
             <div id="status"></div>
-            <div id="message"></div>
-            <table id="stats"></table>
+            <!--<div id="message"></div>
+            <table id="stats"></table>-->
         </div>
     </div>
     <div id="AllStars">
@@ -65,25 +65,18 @@
     </div>
     <div id="startMenu" class="menu" style="display: flex">
         <div style="text-align: center;">
-            <h2>Eclipse</h2>
+            <h2 id="menuTitle">Eclipse</h2>
             <p>Press <strong>1</strong> to begin.</p>
             <br><br>
             <form action="">
                 <label for="cars">Select Dry weight:</label>
                 <select name="cars" id="cars">
-                  <option value="8200">Basic lander</option>
-                  <option value="9000">Lander with Rover</option>
-                  <option value="8420">Lander with Astronaut</option>
+                    <option value="8200">Basic lander</option>
+                    <option value="9000">Lander with Rover</option>
+                    <option value="8420">Lander with Astronaut</option>
                 </select>
-              </form>
-        </div>
-    </div>
-    <div id="restartMenu" class="menu">
-        <div style="text-align: center;">
-            <h2 id="message">Game over</h2>
-            <br>
+            </form>
             <table id="stats"></table>
-            <p>Press <strong>1</strong> to restart.</p>
         </div>
     </div>
     <footer></footer>
