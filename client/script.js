@@ -1,6 +1,98 @@
+let socket;
 // Create a WebSocket instance
 // and connect to the server
-const socket = new WebSocket("ws://localhost:8080");
+function connect() {
+  socket = new WebSocket("ws://localhost:8080");
+
+  // Event listener for when a message
+  //  is received from the server
+  socket.onmessage = (event) => {
+    // Parse the received JSON message
+    var data;
+    try {
+      data = JSON.parse(event.data);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return;
+    }
+
+    // Switch over the keys in the JSON object
+    for (const key in data) {
+      switch (key) {
+        case "altitude":
+          const altitude = document.getElementById("altitude");
+          altitude.textContent = `${data[key].toFixed(2)} m`;
+          break;
+        case "velocity":
+          const velocity = document.getElementById("velocity");
+          velocity.textContent = `${data[key].toFixed(2)} m/s`;
+          break;
+        case "mass":
+          const mass = document.getElementById("mass");
+          mass.textContent = `${data[key].toFixed()} kg`;
+          break;
+        case "isBurning":
+          const thrusters = document.getElementById("thrusters");
+          thrusters.textContent = data[key] ? "ON" : "OFF";
+          break;
+        case "health":
+          const health = document.getElementById("health");
+          health.textContent = data[key].toFixed();
+          break;
+        case "stats":
+          const stats = document.getElementById("stats");
+          var statsHtml = "<tr><th>Statistic</th><th>Value</th></tr>";
+          let statsData = data[key];
+          for (let statKey in statsData) {
+            const result = statKey.replace(/([A-Z])/g, " $1");
+            const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
+            let data = statsData[statKey];
+            if (statKey.toLowerCase().includes('altitude')) {
+              data = `${data} m`;
+            }
+            if (statKey.toLowerCase().includes('rate')) {
+              data = `${data * 100}%`;
+            }
+            statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
+          }
+          stats.innerHTML = statsHtml;
+
+          document.getElementById("statsDiv").style.display = "flex";
+          break;
+        case "diedLastTick":
+          stopGame();
+          break;
+        case "message":
+          const message = document.getElementById("menuTitle");
+          message.innerHTML = data[key];
+          break;
+        // Add more cases as needed for other keys
+        default:
+          console.error(`Unknown key: ${key}`);
+      }
+    }
+  };
+
+  // Event listener for when
+  //the WebSocket connection is opened
+  socket.onopen = (_) => {
+    // Alert the user that they are
+    // connected to the WebSocket server
+    isConnected = true;
+    document.getElementById("status").textContent = "Connection status: connected";
+  };
+
+  // Event listener for when the
+  // WebSocket connection is closed
+  socket.onclose = (_) => {
+    // Log a message when disconnected
+    // from the WebSocket server
+    isConnected = false;
+    stopGame();
+    document.getElementById("status").textContent = "Connection status: not connected. Try starting the server and refreshing the page.";
+    console.log("Disconnected from WebSocket server");
+  };
+}
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
@@ -61,7 +153,8 @@ window.onload = () => {
     switch (gameState) {
       case NOT_STARTED:
       case STOPPED:
-        if (isConnected && startKeys.includes(code)) startGame();
+        if (!isConnected) connect();
+        else if (startKeys.includes(code)) startGame();
         break;
       case PLAYING:
         if (code === thrusterKey) socket.send('isBurning,true');
@@ -82,91 +175,3 @@ window.onload = () => {
     }
   }
 }
-
-// Event listener for when a message
-//  is received from the server
-socket.onmessage = (event) => {
-  // Parse the received JSON message
-  var data;
-  try {
-    data = JSON.parse(event.data);
-  } catch (error) {
-    console.error("Error parsing JSON:", error);
-    return;
-  }
-
-  // Switch over the keys in the JSON object
-  for (const key in data) {
-    switch (key) {
-      case "altitude":
-        const altitude = document.getElementById("altitude");
-        altitude.textContent = `${data[key].toFixed(2)} m`;
-        break;
-      case "velocity":
-        const velocity = document.getElementById("velocity");
-        velocity.textContent = `${data[key].toFixed(2)} m/s`;
-        break;
-      case "mass":
-        const mass = document.getElementById("mass");
-        mass.textContent = `${data[key].toFixed()} kg`;
-        break;
-      case "isBurning":
-        const thrusters = document.getElementById("thrusters");
-        thrusters.textContent = data[key] ? "ON" : "OFF";
-        break;
-      case "health":
-        const health = document.getElementById("health");
-        health.textContent = data[key].toFixed();
-        break;
-      case "stats":
-        const stats = document.getElementById("stats");
-        var statsHtml = "<tr><th>Statistic</th><th>Value</th></tr>";
-        let statsData = data[key];
-        for (let statKey in statsData) {
-          const result = statKey.replace(/([A-Z])/g, " $1");
-          const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
-          let data = statsData[statKey];
-          if (statKey.toLowerCase().includes('altitude')) {
-            data = `${data} m`;
-          }
-          if (statKey.toLowerCase().includes('rate')) {
-            data = `${data * 100}%`;
-          }
-          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
-        }
-        stats.innerHTML = statsHtml;
-
-        document.getElementById("statsDiv").style.display = "flex";
-        break;
-      case "diedLastTick":
-        stopGame();
-        break;
-      case "message":
-        const message = document.getElementById("menuTitle");
-        message.innerHTML = data[key];
-        break;
-      // Add more cases as needed for other keys
-      default:
-        console.error(`Unknown key: ${key}`);
-    }
-  }
-};
-
-// Event listener for when
-//the WebSocket connection is opened
-socket.onopen = (_) => {
-  // Alert the user that they are
-  // connected to the WebSocket server
-  isConnected = true;
-  document.getElementById("status").textContent = "Connection status: connected";
-};
-
-// Event listener for when the
-// WebSocket connection is closed
-socket.onclose = (_) => {
-  // Log a message when disconnected
-  // from the WebSocket server
-  isConnected = false;
-  document.getElementById("status").textContent = "Connection status: not connected. Try starting the server and refreshing the page.";
-  console.log("Disconnected from WebSocket server");
-};
