@@ -149,7 +149,11 @@ socket.onopen = (_) => {
   // Alert the user that they are
   // connected to the WebSocket server
   isConnected = true;
-  document.getElementById("status").textContent = "Connection status: connected";
+  document.getElementById("status").textContent = "Connected to the server.";
+  Array.from(document.getElementsByClassName("startPrompt")).forEach((element) => {
+    element.style.color = "white";
+    element.style.opacity = "1";
+  });
 };
 
 // Event listener for when the
@@ -158,6 +162,10 @@ socket.onclose = (_) => {
   // Log a message when disconnected
   // from the WebSocket server
   isConnected = false;
-  document.getElementById("status").textContent = "Connection status: not connected. Try starting the server and refreshing the page.";
+  document.getElementById("status").textContent = "Disconnected from the server. Try starting the server and refreshing the page.";
+  Array.from(document.getElementsByClassName("startPrompt")).forEach((element) => {
+    element.style.color = "gray";
+    element.style.opacity = "0.5";
+  });
   console.log("Disconnected from WebSocket server");
 };
