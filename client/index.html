@@ -45,7 +45,6 @@
         </div>
         <div class="column" id="Lander_column"></div>
         <div class="column" id="Additional_UI">
-            <div id="status"></div>
             <div id="message"></div>
             <table id="stats"></table>
         </div>
@@ -60,13 +59,14 @@
     <div id="pauseMenu" class="menu">
         <div style="text-align: center;">
             <h2>Paused</h2>
-            <p>Press <strong>Enter</strong> to resume.</p>
+            <h3 class="startPrompt">Press <strong>Enter</strong> to resume.</h3>
         </div>
     </div>
     <div id="startMenu" class="menu" style="display: flex">
         <div style="text-align: center;">
             <h2>Eclipse</h2>
-            <p>Press <strong>1</strong> to begin.</p>
+            <div id="status"></div>
+            <h3 class="startPrompt">Press <strong>1</strong> to begin.</h3>
         </div>
     </div>
     <div id="restartMenu" class="menu">
@@ -74,7 +74,7 @@
             <h2 id="message">Game over</h2>
             <br>
             <table id="stats"></table>
-            <p>Press <strong>1</strong> to restart.</p>
+            <h3 class="startPrompt">Press <strong>1</strong> to restart.</h3>
         </div>
     </div>
     <footer></footer>
