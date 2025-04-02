@@ -4,7 +4,6 @@ const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
-const restartMenu = document.getElementById('restartMenu');
 
 // Game states
 const NOT_STARTED = 'not started';
@@ -16,32 +15,40 @@ var gameState = NOT_STARTED;
 var isConnected = false;
 
 function stopGame() {
-  restartMenu.style.display = 'flex';
+  startMenu.style.display = 'flex';
+  setAnimate(false);
+
   gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
-  restartMenu.style.display = 'none';
-  gameState = PLAYING;
+  setAnimate(true);
 
   // TODO: allow client to pick the starting mass/fuel
+  const weightSelect = document.getElementById("landerWeight")
   socket.send("fuelMass,8200");
-  socket.send("dryMass,8200");
+  socket.send("dryMass," + weightSelect.value);
+
+  gameState = PLAYING;
 }
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
+  setAnimate(false);
+
+  socket.send("isPaused,true");
 
   gameState = PAUSED;
-  socket.send("isPaused,true");
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
+  setAnimate(true);
+
+  socket.send("isPaused,false");
 
   gameState = PLAYING;
-  socket.send("isPaused,false");
 }
 
 const startKeys = ['Escape', 'Enter', 'Digit1'];
@@ -58,7 +65,7 @@ window.onload = () => {
         break;
       case PLAYING:
         if (code == thrusterKey) socket.send('isBurning,true');
-        if (code == pauseKey) pauseGame();
+        else if (code == pauseKey) pauseGame();
         break;
       case PAUSED:
         if (startKeys.includes(code)) unpauseGame();
@@ -128,12 +135,14 @@ socket.onmessage = (event) => {
           statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
         stats.innerHTML = statsHtml;
+
+        document.getElementById("statsDiv").style.display = "flex";
         break;
       case "diedLastTick":
         stopGame();
         break;
       case "message":
-        const message = document.getElementById("message");
+        const message = document.getElementById("menuTitle");
         message.innerHTML = data[key];
         break;
       // Add more cases as needed for other keys

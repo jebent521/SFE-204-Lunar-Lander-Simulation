@@ -125,7 +125,7 @@ wss.on('connection', async function connection(ws) {
         if (blackboard.diedLastTick) {
           ws.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
-            message: `"You ${messages.death[Math.floor(Math.random() * messages.death.length)]}"`
+            message: `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`
           }));
           
           blackboard.state = MENU;
