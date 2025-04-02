@@ -44,12 +44,42 @@ function unpauseGame() {
   socket.send("isPaused,false");
 }
 
+function setThrusters(args) {
+  const thrusters = document.getElementById("thrusters");
+  if (thrusters) {
+    if (args) {
+      const img = document.getElementById("lander");
+      if (img) {
+        img.src = "./lander_burn_left.svg"; // Switch to the landing animation
+      }
+    }
+    else {
+      const img = document.getElementById("lander");
+      if (img) {
+       img.src = "./just_a_lander.svg"; // Reset image to default
+      }
+    }
+  }
+}
+
+function preloadImages() {
+  const images = [
+    "./just_a_lander.svg",
+    "./lander_burn_left.svg",
+  ];
+  images.forEach((src) => {
+    const img = new Image();
+    img.src = src; // Preload the image
+  });
+}
+
 window.onload = function () {
+  preloadImages(); // Preload images to avoid delays
   window.onkeyup = (event) => {
     if (event.code === 'Space') {
       socket.send('isBurning,false');
     }
-  }
+  };
 
   window.addEventListener('keydown', (event) => {
     let code = event.code;
@@ -114,6 +144,7 @@ socket.onmessage = function (event) {
       case "isBurning":
         const thrusters = document.getElementById("thrusters");
         thrusters.textContent = data[key] ? "ON" : "OFF";
+        setThrusters(data[key]); // Add this to toggle thrusters and image
         break;
       case "health":
         const health = document.getElementById("health");

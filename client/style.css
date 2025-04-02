@@ -42,6 +42,10 @@ footer::before {
   z-index: 1;
 }
 
+#Lander_column, #lander {
+  z-index: 1;
+}
+
 .column {
   padding: 10px;
   float: left;
