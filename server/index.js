@@ -38,7 +38,7 @@ const GAME_END = "end";
 
 // Useful functions
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const isDigits = /^[0-9\.]+$/;
+const isDigits = /^[0-9.]+$/;
 
 const wss = new WebSocket.Server({ port: 8080 });
 
@@ -71,8 +71,8 @@ wss.on('connection', async function connection(ws) {
   ws.on('message', function incoming(message) {
     let [k, v] = message.toString().split(",");
 
-    if (v == 'true') { v = true; }
-    else if (v == 'false') { v = false; }
+    if (v === 'true') { v = true; }
+    else if (v === 'false') { v = false; }
     else if (isDigits.test(v)) { v = Number(v); }
 
     if (k in holder) { holder[k] = v }
@@ -144,7 +144,7 @@ wss.on('connection', async function connection(ws) {
         break;
     }
 
-    if (blackboard.state == PLAYING) {
+    if (blackboard.state === PLAYING) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
