@@ -79,6 +79,9 @@ window.onload = function () {
     if (event.code === 'Space') {
       socket.send('isBurning,false');
     }
+    var x = document.getElementById("background_music");
+    x.play();
+
   };
 
   window.addEventListener('keydown', (event) => {
