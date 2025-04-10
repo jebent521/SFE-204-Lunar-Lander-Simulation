@@ -8,7 +8,7 @@ function connect() {
   //  is received from the server
   socket.onmessage = (event) => {
     // Parse the received JSON message
-    var data;
+    let data;
     try {
       data = JSON.parse(event.data);
     } catch (error) {
@@ -41,7 +41,7 @@ function connect() {
           break;
         case "stats":
           const stats = document.getElementById("stats");
-          var statsHtml = "<tr><th>Statistic</th><th>Value</th></tr>";
+          let statsHtml = "<tr><th>Statistic</th><th>Value</th></tr>";
           let statsData = data[key];
           for (let statKey in statsData) {
             const result = statKey.replace(/([A-Z])/g, " $1");
