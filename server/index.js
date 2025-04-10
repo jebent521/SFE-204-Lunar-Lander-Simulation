@@ -1,6 +1,12 @@
 // npm modules
 const WebSocket = require('ws');
 
+const stateMod = require('./modules/state');
+const MENU = stateMod.MENU;
+const PAUSED = stateMod.PAUSED;
+const PLAYING = stateMod.PLAYING;
+const GAME_END = stateMod.GAME_END;
+
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
@@ -9,12 +15,6 @@ const messagesMod = require('./modules/messages');
 const physicsMod = require('./modules/physics');
 
 const TIME_ACCELERATION = 100;
-
-// Game states
-const MENU = "menu";
-const PAUSED = "paused";
-const PLAYING = "playing";
-const GAME_END = "end";
 
 // Useful functions
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -128,7 +128,7 @@ wss.on('connection', async function connection(ws) {
 
     if (blackboard.state === PLAYING) {
       controlsMod(blackboard, holder.isBurning);
-      physics(blackboard);
+      physicsMod.run(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
     }
 
@@ -147,73 +147,3 @@ wss.on('connection', async function connection(ws) {
     ++numTicks;
   }
 });
-
-/**
- * Notes on the Lunar Module
- * Wet Mass:         16_400 kg
- * Fuel Mass:         8_200 kg
- * Dry Mass:          8_200 kg (includes ascent module)
- * 
- * Thrust:           45_040 N  (if throttled, only goes from 10% - 60%)
- * Specific Impulse:    311 s  (vac, 100% throttle)
- * 
- * Height:            3.231 m
- * 
- * CALCULATIONS
- * 
- * The mass flow can be found from the equation for specific impulse,
- * F_thrust = g_0 * I_sp * m
- * where g_0 is the standard gravity (9.80665 m/s^2), I_sp is the
- * specific impulse in seconds, and m is the mass flow rate (kg/s).
- * Solving for mass flow gives:
- * m = F_thrust / g_0 / I_sp
- * Dimensional analysis: kg/s = (kg m/s^2) / (m/s^2) / s
- */
-function physics(blackboard) {
-  let position = blackboard.position;
-  let velocity = blackboard.velocity;
-  let fuel = blackboard.fuel_mass;
-  let isBurning = blackboard.isBurning;
-
-  let lunarG = physicsMod.G * physicsMod.LUNAR_MASS / (position ** 2);
-  let acceleration = -lunarG;
-
-  if (isBurning) {
-    fuel -= physicsMod.MASS_FLOW * physicsMod.TIME_STEP;
-
-    if (fuel < 0) {
-      fuel = 0;
-      isBurning = false;
-    } else {
-      acceleration += physicsMod.THRUST / (fuel + blackboard.dry_mass);
-    }
-  }
-
-  // Update position and velocity
-  position += velocity * physicsMod.TIME_STEP;
-  velocity += acceleration * physicsMod.TIME_STEP;
-
-  let altitude = position - physicsMod.LUNAR_RADIUS;
-
-  if (altitude <= 0){
-    if (velocity < physicsMod.KILL_VEL) {
-
-      blackboard.health = 0;
-      statisticsMod.addCrash(blackboard);
-    } else if (velocity < physicsMod.WARN_VEL) {
-
-      blackboard.health = 100 - (velocity - physicsMod.WARN_VEL / (physicsMod.KILL_VEL - physicsMod.WARN_VEL) * 100);
-    }
-
-    blackboard.state = GAME_END;
-    blackboard.diedLastTick = true;
-    position = physicsMod.LUNAR_RADIUS; velocity = 0; altitude = 0;
-    statisticsMod.addLanding(blackboard);
-  }
-
-  blackboard.isBurning = isBurning;
-  blackboard.fuel_mass = fuel;
-  blackboard.position = position;
-  blackboard.altitude = altitude;
-  blackboard.velocity = velocity;
-}
