@@ -125,8 +125,7 @@ window.onload = () => {
   audio.loop = true;
 }
 
-// Event listener for when a message
-//  is received from the server
+// Event listener for when a message is received from the server
 socket.onmessage = (event) => {
   // Parse the received JSON message
   var data;
@@ -141,9 +140,21 @@ socket.onmessage = (event) => {
   for (const key in data) {
     switch (key) {
       case "altitude":
-        const altitude = document.getElementById("altitude");
-        altitude.textContent = `${data[key].toFixed(2)} m`;
+        const altitudeValue = data[key];
+        const altitudeElem = document.getElementById("altitude");
+        altitudeElem.textContent = `${altitudeValue.toFixed(2)} m`;
+
+        // Move the lander
+        const lander = document.getElementById("wesselVessel");
+        const screenHeight = window.innerHeight;
+        const maxAltitude = 15000;
+        const yPos = screenHeight - (altitudeValue / maxAltitude) * screenHeight;
+        const clampedY = Math.min(Math.max(yPos, 0), screenHeight - 100);
+        lander.style.top = `${clampedY}px`;
+        //Log to debug moving lander png
+        console.log(`Moving lander to ${clampedY}px for altitude ${altitudeValue}`);
         break;
+
       case "velocity":
         const velocity = document.getElementById("velocity");
         velocity.textContent = `${data[key].toFixed(2)} m/s`;
@@ -168,14 +179,14 @@ socket.onmessage = (event) => {
         for (let statKey in statsData) {
           const result = statKey.replace(/([A-Z])/g, " $1");
           const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
-          let data = statsData[statKey];
+          let statData = statsData[statKey];
           if (statKey.toLowerCase().includes('altitude')) {
-            data = `${data} m`;
+            statData = `${statData} m`;
           }
           if (statKey.toLowerCase().includes('rate')) {
-            data = `${data * 100}%`;
+            statData = `${statData * 100}%`;
           }
-          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
+          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${statData}</td></tr>`;
         }
         stats.innerHTML = statsHtml;
 

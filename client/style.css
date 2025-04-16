@@ -109,6 +109,16 @@ td {
   z-index: 9999;
 }
 
+#wesselVessel {
+  position: absolute;
+  width: 40px;
+  height: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100px;
+  z-index: 10;
+}
+
 @keyframes animStar {
   from {
     transform: translateY(0px);
