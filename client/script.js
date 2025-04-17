@@ -1,3 +1,9 @@
+// Get some music going
+const screamSound = new Audio('./audio/wilhelm_scream_CC0.mp3');
+const thrusterSound = new Audio('./audio/thrust.ogg');
+const backgroundMusic = new Audio('./audio/lunar_ambient.ogg');
+let backgroundPlaying = false;
+
 // Create a WebSocket instance
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
@@ -18,6 +24,13 @@ function stopGame() {
   startMenu.style.display = 'flex';
   setAnimate(false);
 
+  const health = document.getElementById("health");
+  if (Number(health.textContent) <= 0) {
+    screamSound.play();
+  }
+
+  updateThrusters(false);
+
   gameState = STOPPED;
 }
 
@@ -25,7 +38,9 @@ function startGame() {
   startMenu.style.display = 'none';
   setAnimate(true);
 
-  // TODO: allow client to pick the starting mass/fuel
+  const lander = document.getElementById("wesselVessel");
+  lander.hidden = false;
+
   const weightSelect = document.getElementById("landerWeight")
   socket.send("fuelMass,8200");
   socket.send("dryMass," + weightSelect.value);
@@ -51,12 +66,47 @@ function unpauseGame() {
   gameState = PLAYING;
 }
 
+function updateThrusters(thrusterState) {
+  const thrusters = document.getElementById("thrusters");
+  const img = document.getElementById("wesselVessel");
+
+  if (thrusters == null || img == null) return;
+
+  thrusters.textContent = thrusterState ? "ON" : "OFF";
+
+  if (thrusterState) {
+    img.src = "./images/landering.gif"; // Switch to the landing animation
+    thrusterSound.play();
+  } else {
+    img.src = "./images/lander.png"; // Reset image to default
+    thrusterSound.pause();
+  }
+}
+
+function preloadImages() {
+  const images = [
+    "./images/lander.png",
+    "./images/landering.gif",
+  ];
+  images.forEach((src) => {
+    const img = new Image();
+    img.src = src; // Preload the image
+  });
+}
+  
 const startKeys = ['Escape', 'Enter', 'Digit1'];
 const pauseKey = 'Escape';
 const thrusterKey = 'Space';
 
 window.onload = () => {
+  preloadImages(); // Preload images to avoid delays
+
   window.onkeydown = (event) => {
+    if (!backgroundPlaying){
+      backgroundMusic.play();
+      backgroundPlaying = true;
+    }
+
     const code = event.code;
     switch (gameState) {
       case NOT_STARTED:
@@ -64,7 +114,8 @@ window.onload = () => {
         if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        if (code == thrusterKey) socket.send('isBurning,true');
+        if (code == thrusterKey)
+          socket.send('isBurning,true');
         else if (code == pauseKey) pauseGame();
         break;
       case PAUSED:
@@ -81,10 +132,12 @@ window.onload = () => {
       socket.send('isBurning,false');
     }
   }
+
+  backgroundMusic.loop = true;
+  thrusterSound.loop = true;
 }
 
-// Event listener for when a message
-//  is received from the server
+// Event listener for when a message is received from the server
 socket.onmessage = (event) => {
   // Parse the received JSON message
   var data;
@@ -99,9 +152,19 @@ socket.onmessage = (event) => {
   for (const key in data) {
     switch (key) {
       case "altitude":
-        const altitude = document.getElementById("altitude");
-        altitude.textContent = `${data[key].toFixed(2)} m`;
+        const altitudeValue = data[key];
+        const altitudeElem = document.getElementById("altitude");
+        altitudeElem.textContent = `${altitudeValue.toFixed(2)} m`;
+
+        // Move the lander
+        const lander = document.getElementById("wesselVessel");
+        const screenHeight = window.innerHeight - 100;
+        const maxAltitude = 150;
+        const yPos = screenHeight * (1 - altitudeValue / maxAltitude);
+        const clampedY = Math.max(yPos, 0);
+        lander.style.top = `${clampedY}px`;
         break;
+
       case "velocity":
         const velocity = document.getElementById("velocity");
         velocity.textContent = `${data[key].toFixed(2)} m/s`;
@@ -111,8 +174,7 @@ socket.onmessage = (event) => {
         mass.textContent = `${data[key].toFixed()} kg`;
         break;
       case "isBurning":
-        const thrusters = document.getElementById("thrusters");
-        thrusters.textContent = data[key] ? "ON" : "OFF";
+        updateThrusters(data[key]); // Add this to toggle thrusters and image
         break;
       case "health":
         const health = document.getElementById("health");
@@ -125,20 +187,20 @@ socket.onmessage = (event) => {
         for (let statKey in statsData) {
           const result = statKey.replace(/([A-Z])/g, " $1");
           const statKeyFormatted = result.charAt(0).toUpperCase() + result.slice(1);
-          let data = statsData[statKey];
+          let statData = statsData[statKey];
           if (statKey.toLowerCase().includes('altitude')) {
-            data = `${data} m`;
+            statData = `${statData} m`;
           }
           if (statKey.toLowerCase().includes('rate')) {
-            data = `${data * 100}%`;
+            statData = `${statData * 100}%`;
           }
-          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
+          statsHtml += `<tr><td>${statKeyFormatted}</td><td>${statData}</td></tr>`;
         }
         stats.innerHTML = statsHtml;
 
         document.getElementById("statsDiv").style.display = "flex";
         break;
-      case "diedLastTick":
+      case "endedLastTick":
         stopGame();
         break;
       case "message":
@@ -177,4 +239,6 @@ socket.onclose = (_) => {
     element.style.opacity = "0.5";
   });
   console.log("Disconnected from WebSocket server");
+  
+  stopGame();
 };

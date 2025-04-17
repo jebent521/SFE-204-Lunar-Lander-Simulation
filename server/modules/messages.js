@@ -62,7 +62,13 @@ const NO_FUEL = [
     "thought the fuel tank was a drink cooler."
 ];
 
+const VICTORY = [
+    "Victory!",
+    "One small step for Wessel..."
+];
+
 module.exports = {
     death: DEATH,
-    noFuel: NO_FUEL
+    noFuel: NO_FUEL,
+    victory: VICTORY
 }

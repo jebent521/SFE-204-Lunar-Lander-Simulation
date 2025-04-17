@@ -42,6 +42,10 @@ footer::before {
   z-index: 1;
 }
 
+#Lander_column, #lander {
+  z-index: 1;
+}
+
 .column {
   padding: 10px;
   float: left;
@@ -103,6 +107,16 @@ td {
   justify-content: center; 
   align-items: center; 
   z-index: 9999;
+}
+
+#wesselVessel {
+  position: absolute;
+  width: 50px;/*size*/
+  height: auto;
+  left: 50%; /*x value center*/
+  transform: translateX(-50%);
+  top: 100px; /*y value center*/
+  z-index: 10;
 }
 
 @keyframes animStar {

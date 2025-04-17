@@ -5,9 +5,10 @@ const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
+const enforcerMod = require('./modules/enforcer');
 const messages = require('./modules/messages');
 
-const TIME_ACCELERATION = 100;
+const TIME_ACCELERATION = 1;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
@@ -47,14 +48,14 @@ wss.on('connection', async function connection(ws) {
 
   // Blackboard. These values are updated once per tick.
   var blackboard = {
-    position: 15_000 + LUNAR_RADIUS,
+    position: 150 + LUNAR_RADIUS,
     velocity: 0,
     fuel_mass: FUEL_MASS,
     dry_mass: DRY_MASS,
     isBurning: false,
     health: 100,
     state: "menu",
-    diedLastTick: false
+    endedLastTick: false
   };
 
   // Holding variables. These may change many times per tick, 
@@ -98,7 +99,7 @@ wss.on('connection', async function connection(ws) {
       // If in the menu, move to playing and reset the blackboard once the weight has been recieved
       case MENU:
         if (holder.fuelMass > 0 && holder.dryMass > 0) { 
-          blackboard.position = 15_000 + LUNAR_RADIUS;
+          blackboard.position = 150 + LUNAR_RADIUS;
           blackboard.velocity = 0;
           blackboard.fuel_mass = holder.fuelMass;
           blackboard.dry_mass = holder.dryMass;
@@ -122,10 +123,15 @@ wss.on('connection', async function connection(ws) {
       // If the game ended last tick, send the statistics, switch to menu and reset the holder
       // Then, alert the client so they can reset themselves
       case GAME_END:
-        if (blackboard.diedLastTick) {
+        if (blackboard.endedLastTick) {
+
+          let message = (blackboard.health > 0) 
+            ? `${messages.victory[Math.floor(Math.random() * messages.victory.length)]}`
+            : (blackboard.fuel_mass == 0) ? `You ${messages.noFuel[Math.floor(Math.random() * messages.noFuel.length)]}`
+              : `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`;
           ws.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
-            message: `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`
+            message: message
           }));
           
           blackboard.state = MENU;
@@ -137,18 +143,20 @@ wss.on('connection', async function connection(ws) {
 
           // Unlike other values, this is ping, not a state change.
           // The value doesn't matter
-          ws.send(JSON.stringify({diedLastTick:true}));
+          ws.send(JSON.stringify({endedLastTick:true}));
           
-          blackboard.diedLastTick = false;
+          blackboard.endedLastTick = false;
         }
         break;
     }
 
+    enforcerMod(blackboard);
     if (blackboard.state == PLAYING) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
     }
+    enforcerMod(blackboard);
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
@@ -224,7 +232,7 @@ function physicsMod(blackboard) {
     }
 
     blackboard.state = GAME_END;
-    blackboard.diedLastTick = true;
+    blackboard.endedLastTick = true;
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
     statisticsMod.addLanding(blackboard);
   }
