@@ -5,6 +5,7 @@ const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
 const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
+const enforcerMod = require('./modules/enforcer');
 const messages = require('./modules/messages');
 
 const TIME_ACCELERATION = 100;
@@ -144,11 +145,13 @@ wss.on('connection', async function connection(ws) {
         break;
     }
 
+    enforcerMod(blackboard);
     if (blackboard.state == PLAYING) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
     }
+    enforcerMod(blackboard);
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
