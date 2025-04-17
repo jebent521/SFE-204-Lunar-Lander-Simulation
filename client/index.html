@@ -48,9 +48,6 @@
         <div class="column" id="Lander_column">
         </div>
         <div class="column" id="Additional_UI">
-            <div id="status"></div>
-            <!--<div id="message"></div>
-            <table id="stats"></table>-->
         </div>
     </div>
     <div id="AllStars">
@@ -63,16 +60,17 @@
     <div id="pauseMenu" class="menu">
         <div style="text-align: center;">
             <h2>Paused</h2>
-            <p>Press <strong>Enter</strong> to resume.</p>
+            <h3 class="startPrompt">Press <strong>Enter</strong> to resume.</h3>
         </div>
     </div>
     <div id="startMenu" class="menu" style="display: flex">
         <div style="text-align: center;">
             <h2 id="menuTitle">Eclipse</h2>
+            <div id="status"></div>
             <div id="statsDiv">
                 <table id="stats"></table>
             </div>
-            <p>Press <strong>1</strong> to begin.</p>
+            <h3 class="startPrompt">Press <strong>1</strong> to begin.</h3>
             <form action="">
                 <label for="landerWeight">Select Lander Configuration:</label>
                 <select name="landerWeight" id="landerWeight">
