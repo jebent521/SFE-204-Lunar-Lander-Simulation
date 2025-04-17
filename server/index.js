@@ -54,7 +54,7 @@ wss.on('connection', async function connection(ws) {
     isBurning: false,
     health: 100,
     state: "menu",
-    diedLastTick: false
+    endedLastTick: false
   };
 
   // Holding variables. These may change many times per tick, 
@@ -122,7 +122,7 @@ wss.on('connection', async function connection(ws) {
       // If the game ended last tick, send the statistics, switch to menu and reset the holder
       // Then, alert the client so they can reset themselves
       case GAME_END:
-        if (blackboard.diedLastTick) {
+        if (blackboard.endedLastTick) {
           ws.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
             message: `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`
@@ -137,9 +137,9 @@ wss.on('connection', async function connection(ws) {
 
           // Unlike other values, this is ping, not a state change.
           // The value doesn't matter
-          ws.send(JSON.stringify({diedLastTick:true}));
+          ws.send(JSON.stringify({endedLastTick:true}));
           
-          blackboard.diedLastTick = false;
+          blackboard.endedLastTick = false;
         }
         break;
     }
@@ -224,7 +224,7 @@ function physicsMod(blackboard) {
     }
 
     blackboard.state = GAME_END;
-    blackboard.diedLastTick = true;
+    blackboard.endedLastTick = true;
     position = LUNAR_RADIUS; velocity = 0; altitude = 0;
     statisticsMod.addLanding(blackboard);
   }

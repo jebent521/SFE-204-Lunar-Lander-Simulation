@@ -1,6 +1,8 @@
 // Get some music going
-let audio = null;
-let audioPlaying = false;
+const screamSound = new Audio('./audio/wilhelm_scream_CC0.mp3');
+const thrusterSound = new Audio('./audio/thrust.ogg');
+const backgroundMusic = new Audio('./audio/lunar_ambient.ogg');
+let backgroundPlaying = false;
 
 // Create a WebSocket instance
 // and connect to the server
@@ -21,6 +23,13 @@ var isConnected = false;
 function stopGame() {
   startMenu.style.display = 'flex';
   setAnimate(false);
+
+  const health = document.getElementById("health");
+  if (Number(health.textContent) <= 0) {
+    screamSound.play();
+  }
+
+  updateThrusters(false);
 
   gameState = STOPPED;
 }
@@ -57,16 +66,20 @@ function unpauseGame() {
   gameState = PLAYING;
 }
 
-function updateLanderImage(thrusterState) {
+function updateThrusters(thrusterState) {
   const thrusters = document.getElementById("thrusters");
   const img = document.getElementById("wesselVessel");
 
   if (thrusters == null || img == null) return;
 
+  thrusters.textContent = thrusterState ? "ON" : "OFF";
+
   if (thrusterState) {
     img.src = "./images/landering.gif"; // Switch to the landing animation
+    thrusterSound.play();
   } else {
     img.src = "./images/lander.png"; // Reset image to default
+    thrusterSound.pause();
   }
 }
 
@@ -89,9 +102,9 @@ window.onload = () => {
   preloadImages(); // Preload images to avoid delays
 
   window.onkeydown = (event) => {
-    if (!audioPlaying){
-      audio.play();
-      audioPlaying = true;
+    if (!backgroundPlaying){
+      backgroundMusic.play();
+      backgroundPlaying = true;
     }
 
     const code = event.code;
@@ -101,12 +114,9 @@ window.onload = () => {
         if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        if (code == thrusterKey) {
+        if (code == thrusterKey)
           socket.send('isBurning,true');
-        
-          var x = document.getElementById("background_music");
-          x.play();
-        } else if (code == pauseKey) pauseGame();
+        else if (code == pauseKey) pauseGame();
         break;
       case PAUSED:
         if (startKeys.includes(code)) unpauseGame();
@@ -123,8 +133,8 @@ window.onload = () => {
     }
   }
 
-  audio = new Audio('./audio/lunar_ambient.ogg');
-  audio.loop = true;
+  backgroundMusic.loop = true;
+  thrusterSound.loop = true;
 }
 
 // Event listener for when a message is received from the server
@@ -153,8 +163,6 @@ socket.onmessage = (event) => {
         const yPos = screenHeight * (1 - altitudeValue / maxAltitude);
         const clampedY = Math.max(yPos, 0);
         lander.style.top = `${clampedY}px`;
-        //Log to debug moving lander png
-        console.log(`Moving lander to ${clampedY}px for altitude ${altitudeValue}`);
         break;
 
       case "velocity":
@@ -166,9 +174,7 @@ socket.onmessage = (event) => {
         mass.textContent = `${data[key].toFixed()} kg`;
         break;
       case "isBurning":
-        const thrusters = document.getElementById("thrusters");
-        thrusters.textContent = data[key] ? "ON" : "OFF";
-        updateLanderImage(data[key]); // Add this to toggle thrusters and image
+        updateThrusters(data[key]); // Add this to toggle thrusters and image
         break;
       case "health":
         const health = document.getElementById("health");
@@ -194,7 +200,7 @@ socket.onmessage = (event) => {
 
         document.getElementById("statsDiv").style.display = "flex";
         break;
-      case "diedLastTick":
+      case "endedLastTick":
         stopGame();
         break;
       case "message":
