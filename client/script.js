@@ -29,7 +29,9 @@ function startGame() {
   startMenu.style.display = 'none';
   setAnimate(true);
 
-  // TODO: allow client to pick the starting mass/fuel
+  const lander = document.getElementById("wesselVessel");
+  lander.hidden = false;
+
   const weightSelect = document.getElementById("landerWeight")
   socket.send("fuelMass,8200");
   socket.send("dryMass," + weightSelect.value);
@@ -57,21 +59,21 @@ function unpauseGame() {
 
 function updateLanderImage(thrusterState) {
   const thrusters = document.getElementById("thrusters");
-  const img = document.getElementById("lander");
+  const img = document.getElementById("wesselVessel");
 
   if (thrusters == null || img == null) return;
 
   if (thrusterState) {
-    img.src = "./lander_burn_left.svg"; // Switch to the landing animation
+    img.src = "./images/landering.gif"; // Switch to the landing animation
   } else {
-    img.src = "./just_a_lander.svg"; // Reset image to default
+    img.src = "./images/lander.png"; // Reset image to default
   }
 }
 
 function preloadImages() {
   const images = [
-    "./just_a_lander.svg",
-    "./lander_burn_left.svg",
+    "./images/lander.png",
+    "./images/landering.gif",
   ];
   images.forEach((src) => {
     const img = new Image();
@@ -121,7 +123,7 @@ window.onload = () => {
     }
   }
 
-  audio = new Audio('audio/521061__wi-photos__outer-space.mp3');
+  audio = new Audio('./audio/lunar_ambient.ogg');
   audio.loop = true;
 }
 
@@ -146,10 +148,10 @@ socket.onmessage = (event) => {
 
         // Move the lander
         const lander = document.getElementById("wesselVessel");
-        const screenHeight = window.innerHeight;
+        const screenHeight = window.innerHeight - 100;
         const maxAltitude = 15000;
-        const yPos = screenHeight - (altitudeValue / maxAltitude) * screenHeight;
-        const clampedY = Math.min(Math.max(yPos, 0), screenHeight - 100);
+        const yPos = screenHeight * (1 - altitudeValue / maxAltitude);
+        const clampedY = Math.max(yPos, 0);
         lander.style.top = `${clampedY}px`;
         //Log to debug moving lander png
         console.log(`Moving lander to ${clampedY}px for altitude ${altitudeValue}`);

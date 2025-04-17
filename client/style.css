@@ -111,11 +111,11 @@ td {
 
 #wesselVessel {
   position: absolute;
-  width: 40px;
+  width: 50px;/*size*/
   height: auto;
-  left: 50%;
+  left: 50%; /*x value center*/
   transform: translateX(-50%);
-  top: 100px;
+  top: 100px; /*y value center*/
   z-index: 10;
 }
 
