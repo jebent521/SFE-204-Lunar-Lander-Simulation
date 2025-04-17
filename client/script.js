@@ -64,8 +64,8 @@ window.onload = () => {
         if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        if (code == thrusterKey) socket.send('isBurning,true');
-        else if (code == pauseKey) pauseGame();
+        if (code === thrusterKey) socket.send('isBurning,true');
+        else if (code === pauseKey) pauseGame();
         break;
       case PAUSED:
         if (startKeys.includes(code)) unpauseGame();
