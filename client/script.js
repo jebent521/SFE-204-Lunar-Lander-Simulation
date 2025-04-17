@@ -159,7 +159,7 @@ socket.onmessage = (event) => {
         // Move the lander
         const lander = document.getElementById("wesselVessel");
         const screenHeight = window.innerHeight - 100;
-        const maxAltitude = 15000;
+        const maxAltitude = 150;
         const yPos = screenHeight * (1 - altitudeValue / maxAltitude);
         const clampedY = Math.max(yPos, 0);
         lander.style.top = `${clampedY}px`;

@@ -8,7 +8,7 @@ const communicationMod = require('./modules/communications');
 const enforcerMod = require('./modules/enforcer');
 const messages = require('./modules/messages');
 
-const TIME_ACCELERATION = 100;
+const TIME_ACCELERATION = 1;
 
 // Time constants
 const NS_PER_MS = 1_000_000;
@@ -48,7 +48,7 @@ wss.on('connection', async function connection(ws) {
 
   // Blackboard. These values are updated once per tick.
   var blackboard = {
-    position: 15_000 + LUNAR_RADIUS,
+    position: 150 + LUNAR_RADIUS,
     velocity: 0,
     fuel_mass: FUEL_MASS,
     dry_mass: DRY_MASS,
@@ -99,7 +99,7 @@ wss.on('connection', async function connection(ws) {
       // If in the menu, move to playing and reset the blackboard once the weight has been recieved
       case MENU:
         if (holder.fuelMass > 0 && holder.dryMass > 0) { 
-          blackboard.position = 15_000 + LUNAR_RADIUS;
+          blackboard.position = 150 + LUNAR_RADIUS;
           blackboard.velocity = 0;
           blackboard.fuel_mass = holder.fuelMass;
           blackboard.dry_mass = holder.dryMass;
@@ -124,9 +124,14 @@ wss.on('connection', async function connection(ws) {
       // Then, alert the client so they can reset themselves
       case GAME_END:
         if (blackboard.endedLastTick) {
+
+          let message = (blackboard.health > 0) 
+            ? `${messages.victory[Math.floor(Math.random() * messages.victory.length)]}`
+            : (blackboard.fuel_mass == 0) ? `You ${messages.noFuel[Math.floor(Math.random() * messages.noFuel.length)]}`
+              : `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`;
           ws.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
-            message: `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`
+            message: message
           }));
           
           blackboard.state = MENU;
