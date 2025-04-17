@@ -51,6 +51,22 @@ function unpauseGame() {
   gameState = PLAYING;
 }
 
+function altitudeToScreenPosition(altitude) {
+  const maxAltitude = 15000;
+  const screenHeight = window.innerHeight;
+  const landerHeight = document.getElementById('lander').style.height; // height of lander image
+  const moonHeight = 205.6; // magic number 🪄
+  console.log(moonHeight);
+  const moonPosition = screenHeight - (moonHeight + landerHeight);
+  return moonPosition - (altitude / maxAltitude) * moonPosition;
+}
+
+function setLanderAltitude(altitude) {
+  const position = altitudeToScreenPosition(altitude);
+  const lander = document.getElementById('lander');
+  lander.style.top = `${position}px`
+}
+
 const startKeys = ['Escape', 'Enter', 'Digit1'];
 const pauseKey = 'Escape';
 const thrusterKey = 'Space';
@@ -101,6 +117,7 @@ socket.onmessage = (event) => {
       case "altitude":
         const altitude = document.getElementById("altitude");
         altitude.textContent = `${data[key].toFixed(2)} m`;
+        setLanderAltitude(data[key]);
         break;
       case "velocity":
         const velocity = document.getElementById("velocity");

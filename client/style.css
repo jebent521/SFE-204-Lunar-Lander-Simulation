@@ -91,6 +91,14 @@ td {
   padding-bottom: 10px;
 }
 
+#lander {
+  height: 80px;
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .menu {
   display: none;
   position: fixed; 
