@@ -4,7 +4,6 @@ const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
 const startMenu = document.getElementById('startMenu');
-const restartMenu = document.getElementById('restartMenu');
 
 // Game states
 const NOT_STARTED = 'not started';
@@ -16,49 +15,52 @@ var gameState = NOT_STARTED;
 var isConnected = false;
 
 function stopGame() {
-  restartMenu.style.display = 'flex';
+  startMenu.style.display = 'flex';
+  setAnimate(false);
+
   gameState = STOPPED;
 }
 
 function startGame() {
   startMenu.style.display = 'none';
-  restartMenu.style.display = 'none';
-  gameState = PLAYING;
+  setAnimate(true);
 
   // TODO: allow client to pick the starting mass/fuel
+  const weightSelect = document.getElementById("landerWeight")
   socket.send("fuelMass,8200");
-  socket.send("dryMass,8200");
+  socket.send("dryMass," + weightSelect.value);
+
+  gameState = PLAYING;
 }
 
 function pauseGame() {
   pauseMenu.style.display = 'flex';
+  setAnimate(false);
+
+  socket.send("isPaused,true");
 
   gameState = PAUSED;
-  socket.send("isPaused,true");
 }
 
 function unpauseGame() {
   pauseMenu.style.display = 'none';
+  setAnimate(true);
+
+  socket.send("isPaused,false");
 
   gameState = PLAYING;
-  socket.send("isPaused,false");
 }
 
-function setThrusters(args) {
+function updateLanderImage(thrusterState) {
   const thrusters = document.getElementById("thrusters");
-  if (thrusters) {
-    if (args) {
-      const img = document.getElementById("lander");
-      if (img) {
-        img.src = "./lander_burn_left.svg"; // Switch to the landing animation
-      }
-    }
-    else {
-      const img = document.getElementById("lander");
-      if (img) {
-       img.src = "./just_a_lander.svg"; // Reset image to default
-      }
-    }
+  const img = document.getElementById("lander");
+
+  if (thrusters == null || img == null) return;
+
+  if (thrusterState) {
+    img.src = "./lander_burn_left.svg"; // Switch to the landing animation
+  } else {
+    img.src = "./just_a_lander.svg"; // Reset image to default
   }
 }
 
@@ -72,54 +74,48 @@ function preloadImages() {
     img.src = src; // Preload the image
   });
 }
+  
+const startKeys = ['Escape', 'Enter', 'Digit1'];
+const pauseKey = 'Escape';
+const thrusterKey = 'Space';
 
-window.onload = function () {
+window.onload = () => {
   preloadImages(); // Preload images to avoid delays
-  window.onkeyup = (event) => {
-    if (event.code === 'Space') {
-      socket.send('isBurning,false');
-    }
-    var x = document.getElementById("background_music");
-    x.play();
 
-  };
-
-  window.addEventListener('keydown', (event) => {
-    let code = event.code;
+  window.onkeydown = (event) => {
+    const code = event.code;
     switch (gameState) {
       case NOT_STARTED:
       case STOPPED:
-        if ((code == 'Escape' || code == 'Enter' || code == 'Digit1')
-            && isConnected) {
-            startGame();
-        }
+        if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        switch (event.code) {
-          case 'Space':
-            socket.send('isBurning,true');
-            break;
-          case 'Escape':
-            pauseGame();
-          default:
-            break;
-        }
+        if (code == thrusterKey) {
+          socket.send('isBurning,true');
+        
+          var x = document.getElementById("background_music");
+          x.play();
+        } else if (code == pauseKey) pauseGame();
         break;
       case PAUSED:
-        if (code == 'Escape' || code == 'Enter' || code == 'Digit1') {
-            unpauseGame();
-        }
+        if (startKeys.includes(code)) unpauseGame();
         break;
       default:
-        console.error('Invalid game state detected:', gameState);
+        console.error(`Invalid game state detected: ${gameState}`);
         return;
     }
-  });  
+  };
+
+  window.onkeyup = (event) => {
+    if (event.code === thrusterKey) {
+      socket.send('isBurning,false');
+    }
+  }
 }
 
 // Event listener for when a message
 //  is received from the server
-socket.onmessage = function (event) {
+socket.onmessage = (event) => {
   // Parse the received JSON message
   var data;
   try {
@@ -147,7 +143,7 @@ socket.onmessage = function (event) {
       case "isBurning":
         const thrusters = document.getElementById("thrusters");
         thrusters.textContent = data[key] ? "ON" : "OFF";
-        setThrusters(data[key]); // Add this to toggle thrusters and image
+        updateLanderImage(data[key]); // Add this to toggle thrusters and image
         break;
       case "health":
         const health = document.getElementById("health");
@@ -170,12 +166,14 @@ socket.onmessage = function (event) {
           statsHtml += `<tr><td>${statKeyFormatted}</td><td>${data}</td></tr>`;
         }
         stats.innerHTML = statsHtml;
+
+        document.getElementById("statsDiv").style.display = "flex";
         break;
       case "diedLastTick":
         stopGame();
         break;
       case "message":
-        const message = document.getElementById("message");
+        const message = document.getElementById("menuTitle");
         message.innerHTML = data[key];
         break;
       // Add more cases as needed for other keys

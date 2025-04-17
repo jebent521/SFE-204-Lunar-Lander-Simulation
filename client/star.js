@@ -79,11 +79,10 @@ for (var i = 0; i < starAnimation.length; i++) {
   starAnimation[i].style.animationPlayState = 'running';
 }
 
-function toggleAnimation() {
-  var style;
+function setAnimate(value) {
   for (var i = 0; i < starAnimation.length; i++) {
-    style = starAnimation[i].style;
-    if (style.animationPlayState === 'running') {
+    var style = starAnimation[i].style;
+    if (!value) {
       style.animationPlayState = 'paused';
       document.body.className = 'paused';
     } else {
