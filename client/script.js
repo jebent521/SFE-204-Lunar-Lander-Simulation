@@ -239,4 +239,6 @@ socket.onclose = (_) => {
     element.style.opacity = "0.5";
   });
   console.log("Disconnected from WebSocket server");
+  
+  stopGame();
 };
