@@ -1,3 +1,7 @@
+// Get some music going
+let audio = null;
+let audioPlaying = false;
+
 // Create a WebSocket instance
 // and connect to the server
 const socket = new WebSocket("ws://localhost:8080");
@@ -83,6 +87,11 @@ window.onload = () => {
   preloadImages(); // Preload images to avoid delays
 
   window.onkeydown = (event) => {
+    if (!audioPlaying){
+      audio.play();
+      audioPlaying = true;
+    }
+
     const code = event.code;
     switch (gameState) {
       case NOT_STARTED:
@@ -111,6 +120,9 @@ window.onload = () => {
       socket.send('isBurning,false');
     }
   }
+
+  audio = new Audio('audio/521061__wi-photos__outer-space.mp3');
+  audio.loop = true;
 }
 
 // Event listener for when a message
