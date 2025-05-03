@@ -1,14 +1,15 @@
 // npm modules
-const { Server } = require('ws');
-const { DatabaseSync } = require('node:sqlite');
+import { WebSocketServer } from 'ws';
+import { DatabaseSync } from 'node:sqlite';
 
-const statisticsMod = require('./modules/statistics');
-const controlsMod = require('./modules/controls');
-const loggingMod = require('./modules/logging');
-const communicationMod = require('./modules/communications');
-const enforcerMod = require('./modules/enforcer');
-const messages = require('./modules/messages');
-const constants = require('./modules/constants');
+import * as statisticsMod from './modules/statistics.js';
+import controlsMod from './modules/controls.js';
+import loggingMod from './modules/logging.js';
+import communicationMod from './modules/communications.js';
+import enforcerMod from './modules/enforcer.js';
+import * as messages from './modules/messages.js';
+import * as constants from './modules/constants.js';
+import { Blackboard } from "./modules/blackboard.js";
 
 const TIME_ACCELERATION = 1;
 
@@ -16,33 +17,21 @@ const TIME_ACCELERATION = 1;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isDigits = /^[0-9.]+$/;
 
-/*const database = new DatabaseSync(':memory:')
-database.exec(`
-CREATE TABLE data(
-  sessionID INTEGER PRIMARY KEY,
-  value TEXT
-) STRICT
-`)*/
-const wss = new Server({ port: 8080 });
+// Database init
+const database = new DatabaseSync(':memory:');
+Blackboard.createTable(database);
+
+const wss = new WebSocketServer({ port: 8080 });
 
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
 
-  // Blackboard. These values are updated once per tick.
-  var blackboard = {
-    position: 150 + constants.LUNAR_RADIUS,
-    velocity: 0,
-    fuel_mass: constants.FUEL_MASS,
-    dry_mass: constants.DRY_MASS,
-    isBurning: false,
-    health: 100,
-    state: "menu",
-    endedLastTick: false
-  };
+  // These values are updated once per tick.
+  let blackboard = new Blackboard();
 
   // Holding variables. These may change many times per tick, 
   // but only get copied to the blackboard once per tick
-  var holder = {
+  let holder = {
     isBurning: false,
     disconnected: false,
     isPaused: false,
@@ -74,7 +63,7 @@ wss.on('connection', async function connection(ws) {
   let numTicks = 0;
   while (true) {
     // Tick start
-    var time = process.hrtime.bigint();
+    let time = process.hrtime.bigint();
 
     // Process state changes
     switch (blackboard.state) {
@@ -108,9 +97,9 @@ wss.on('connection', async function connection(ws) {
         if (blackboard.endedLastTick) {
 
           let message = (blackboard.health > 0) 
-            ? `${messages.victory[Math.floor(Math.random() * messages.victory.length)]}`
-            : (blackboard.fuel_mass === 0) ? `You ${messages.noFuel[Math.floor(Math.random() * messages.noFuel.length)]}`
-              : `You ${messages.death[Math.floor(Math.random() * messages.death.length)]}`;
+            ? `${messages.VICTORY[Math.floor(Math.random() * messages.VICTORY.length)]}`
+            : (blackboard.fuel_mass === 0) ? `You ${messages.NO_FUEL[Math.floor(Math.random() * messages.NO_FUEL.length)]}`
+              : `You ${messages.DEATH[Math.floor(Math.random() * messages.DEATH.length)]}`;
           ws.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
             message: message
@@ -144,7 +133,7 @@ wss.on('connection', async function connection(ws) {
     communicationMod(blackboard, ws);
 
     // Wait for next tick
-    var elapsed = Number(process.hrtime.bigint() - time)
+    let elapsed = Number(process.hrtime.bigint() - time)
     elapsed = elapsed / constants.NS_PER_MS;
     if (elapsed > constants.MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / constants.MS_PER_TICK); }
     else {
@@ -201,7 +190,7 @@ function physicsMod(blackboard) {
   position += velocity * constants.TIME_STEP;
   velocity += acceleration * constants.TIME_STEP;
 
-  altitude = position - constants.LUNAR_RADIUS;
+  let altitude = position - constants.LUNAR_RADIUS;
 
   if (altitude <= 0){
     if (velocity < constants.KILL_VEL) {

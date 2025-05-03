@@ -1,7 +1,7 @@
 /**
  * TALK TO THE CLIENT
  */
-function communicationMod(blackboard, ws) {
+export default function communicationMod(blackboard, ws) {
     ws.send(JSON.stringify({
         altitude: blackboard.altitude,
         velocity: blackboard.velocity,
@@ -10,5 +10,3 @@ function communicationMod(blackboard, ws) {
         health: blackboard.health
     }));
 }
-
-module.exports = communicationMod;

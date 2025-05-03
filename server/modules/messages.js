@@ -1,5 +1,5 @@
 // No actual function, just keeps the massive array out of the main file
-const DEATH = [
+export const DEATH = [
     "underestimated the moon’s hardness.",
     "found out that lunar gravity still hurts.",
     "mistook the surface for a trampoline.",
@@ -50,7 +50,7 @@ const DEATH = [
     "forgot to read the instructions."
 ];
 
-const NO_FUEL = [
+export const NO_FUEL = [
     "ran out of fuel.",
     "should have packed more gas.",
     "forgot to top off the tank.",
@@ -62,13 +62,7 @@ const NO_FUEL = [
     "thought the fuel tank was a drink cooler."
 ];
 
-const VICTORY = [
+export const VICTORY = [
     "Victory!",
     "One small step for Wessel..."
 ];
-
-module.exports = {
-    death: DEATH,
-    noFuel: NO_FUEL,
-    victory: VICTORY
-}

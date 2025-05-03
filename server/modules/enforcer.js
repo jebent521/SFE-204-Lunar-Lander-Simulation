@@ -1,9 +1,7 @@
-const constants = require("constants.js");
+import { PLAYING } from "./constants.js";
 
-function enforcerMod(blackboard) {
-    if (blackboard.state !== constants.PLAYING || blackboard.health <= 0) {
+export default function enforcerMod(blackboard) {
+    if (blackboard.state !== PLAYING || blackboard.health <= 0) {
         blackboard.isBurning = false;
     }
 }
-
-module.exports = enforcerMod;
