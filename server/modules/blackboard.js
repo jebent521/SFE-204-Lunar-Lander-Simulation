@@ -3,8 +3,8 @@ import * as constants from './constants.js';
 export class Blackboard {
     static createTable = function (db) {
         db.exec(`
-        CREATE TABLE data(
-            sessionID INTEGER PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS data(
+            sessionID TEXT PRIMARY KEY,
             position REAL,
             velocity REAL,
             fuel_mass REAL,
@@ -26,5 +26,13 @@ export class Blackboard {
         this.health = 100;
         this.state = constants.MENU;
         this.endedLastTick = false;
+    }
+
+    dumpToDB(database, id) {
+        database.exec(`
+        INSERT OR REPLACE INTO data(sessionID, position, velocity, fuel_mass, dry_mass, isBurning, health, state, 
+                          endedLastTick)
+        VALUES ('${id}', ${this.position}, ${this.velocity}, ${this.fuel_mass}, ${this.dry_mass}, ${this.isBurning}, ${this.health}, '${this.state}', ${this.endedLastTick})
+        `);
     }
 }

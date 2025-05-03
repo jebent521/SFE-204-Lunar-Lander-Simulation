@@ -18,7 +18,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isDigits = /^[0-9.]+$/;
 
 // Database init
-const database = new DatabaseSync(':memory:');
+const database = new DatabaseSync('./data.sqlite');
 Blackboard.createTable(database);
 
 const wss = new WebSocketServer({ port: 8080 });
@@ -26,7 +26,7 @@ const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', async function connection(ws) {
   console.log('Client connected');
 
-  // These values are updated once per tick.
+  let sessionID = crypto.randomUUID();
   let blackboard = new Blackboard();
 
   // Holding variables. These may change many times per tick, 
@@ -131,6 +131,8 @@ wss.on('connection', async function connection(ws) {
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
     communicationMod(blackboard, ws);
+
+    blackboard.dumpToDB(database, sessionID);
 
     // Wait for next tick
     let elapsed = Number(process.hrtime.bigint() - time)
