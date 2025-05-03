@@ -1,6 +1,6 @@
 // npm modules
 const { Server } = require('ws');
-const sqlite = require('node:sqlite');
+const { DatabaseSync } = require('node:sqlite');
 
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
@@ -40,8 +40,15 @@ const GAME_END = "end";
 
 // Useful functions
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const isDigits = /^[0-9\.]+$/;
+const isDigits = /^[0-9.]+$/;
 
+/*const database = new DatabaseSync(':memory:')
+database.exec(`
+CREATE TABLE data(
+  sessionID INTEGER PRIMARY KEY,
+  value TEXT
+) STRICT
+`)*/
 const wss = new Server({ port: 8080 });
 
 wss.on('connection', async function connection(ws) {
