@@ -8,35 +8,9 @@ const loggingMod = require('./modules/logging');
 const communicationMod = require('./modules/communications');
 const enforcerMod = require('./modules/enforcer');
 const messages = require('./modules/messages');
+const constants = require('./modules/constants');
 
 const TIME_ACCELERATION = 1;
-
-// Time constants
-const NS_PER_MS = 1_000_000;
-const MS_PER_TICK = 50;
-const TIME_STEP = MS_PER_TICK / 1_000;
-
-// Physical constants
-const G_0 = 9.80665;
-const LUNAR_MASS = 7.346 * 10 ** 22;
-const LUNAR_RADIUS = 1_737_400;
-const G = 6.6743 * 10 ** -11;
-
-// Lander specs
-const INVALID_MASS = -1;
-const FUEL_MASS = 8_200;
-const DRY_MASS = 8_200;
-const I_SP = 311;
-const THRUST = 45_040;
-const MASS_FLOW = THRUST / G_0 / I_SP;
-const WARN_VEL = -3;
-const KILL_VEL = -5;
-
-// Game states
-const MENU = "menu";
-const PAUSED = "paused";
-const PLAYING = "playing";
-const GAME_END = "end";
 
 // Useful functions
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -56,10 +30,10 @@ wss.on('connection', async function connection(ws) {
 
   // Blackboard. These values are updated once per tick.
   var blackboard = {
-    position: 150 + LUNAR_RADIUS,
+    position: 150 + constants.LUNAR_RADIUS,
     velocity: 0,
-    fuel_mass: FUEL_MASS,
-    dry_mass: DRY_MASS,
+    fuel_mass: constants.FUEL_MASS,
+    dry_mass: constants.DRY_MASS,
     isBurning: false,
     health: 100,
     state: "menu",
@@ -72,8 +46,8 @@ wss.on('connection', async function connection(ws) {
     isBurning: false,
     disconnected: false,
     isPaused: false,
-    fuelMass: INVALID_MASS,
-    dryMass: INVALID_MASS
+    fuelMass: constants.INVALID_MASS,
+    dryMass: constants.INVALID_MASS
   };
 
   // Register events
@@ -105,15 +79,15 @@ wss.on('connection', async function connection(ws) {
     // Process state changes
     switch (blackboard.state) {
       // If in the menu, move to playing and reset the blackboard once the weight has been recieved
-      case MENU:
+      case constants.MENU:
         if (holder.fuelMass > 0 && holder.dryMass > 0) { 
-          blackboard.position = 150 + LUNAR_RADIUS;
+          blackboard.position = 150 + constants.LUNAR_RADIUS;
           blackboard.velocity = 0;
           blackboard.fuel_mass = holder.fuelMass;
           blackboard.dry_mass = holder.dryMass;
           blackboard.isBurning = false;
           blackboard.health = 100;
-          blackboard.state = PLAYING;
+          blackboard.state = constants.PLAYING;
 
           statisticsMod.addAttempt(blackboard);
 
@@ -121,16 +95,16 @@ wss.on('connection', async function connection(ws) {
         }
         break;
       // If playing, pause at will
-      case PLAYING:
-        if (holder.isPaused) { blackboard.state = PAUSED; }
+      case constants.PLAYING:
+        if (holder.isPaused) { blackboard.state = constants.PAUSED; }
         break;
       // If paused, unpause at will
-      case PAUSED:
-        if (!holder.isPaused) { blackboard.state = PLAYING; }
+      case constants.PAUSED:
+        if (!holder.isPaused) { blackboard.state = constants.PLAYING; }
         break;
       // If the game ended last tick, send the statistics, switch to menu and reset the holder
       // Then, alert the client so they can reset themselves
-      case GAME_END:
+      case constants.GAME_END:
         if (blackboard.endedLastTick) {
 
           let message = (blackboard.health > 0) 
@@ -142,12 +116,12 @@ wss.on('connection', async function connection(ws) {
             message: message
           }));
           
-          blackboard.state = MENU;
+          blackboard.state = constants.MENU;
 
           holder.isBurning = false;
           holder.isPaused = false;
-          holder.fuelMass = INVALID_MASS;
-          holder.dryMass = INVALID_MASS;
+          holder.fuelMass = constants.INVALID_MASS;
+          holder.dryMass = constants.INVALID_MASS;
 
           // Unlike other values, this is ping, not a state change.
           // The value doesn't matter
@@ -159,7 +133,7 @@ wss.on('connection', async function connection(ws) {
     }
 
     enforcerMod(blackboard);
-    if (blackboard.state === PLAYING) {
+    if (blackboard.state === constants.PLAYING) {
       controlsMod(blackboard, holder.isBurning);
       physicsMod(blackboard);
       statisticsMod.recordHighestAltitude(blackboard);
@@ -171,10 +145,10 @@ wss.on('connection', async function connection(ws) {
 
     // Wait for next tick
     var elapsed = Number(process.hrtime.bigint() - time)
-    elapsed = elapsed / NS_PER_MS;
-    if (elapsed > MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / MS_PER_TICK); }
+    elapsed = elapsed / constants.NS_PER_MS;
+    if (elapsed > constants.MS_PER_TICK / TIME_ACCELERATION) { console.log("Behind %i ms, skipping %i ticks", elapsed, elapsed / constants.MS_PER_TICK); }
     else {
-      await sleep(MS_PER_TICK / TIME_ACCELERATION - elapsed);
+      await sleep(constants.MS_PER_TICK / TIME_ACCELERATION - elapsed);
       if (holder.disconnected) { break; }
     }
 
@@ -209,39 +183,39 @@ function physicsMod(blackboard) {
   var fuel = blackboard.fuel_mass;
   var isBurning = blackboard.isBurning;
 
-  let lunarG = G * LUNAR_MASS / (position ** 2);
+  let lunarG = constants.G * constants.LUNAR_MASS / (position ** 2);
   var acceleration = -lunarG;
 
   if (isBurning) {
-    fuel -= MASS_FLOW * TIME_STEP;
+    fuel -= constants.MASS_FLOW * constants.TIME_STEP;
 
     if (fuel < 0) {
       fuel = 0;
       isBurning = false;
     } else {
-      acceleration += THRUST / (fuel + blackboard.dry_mass);
+      acceleration += constants.THRUST / (fuel + blackboard.dry_mass);
     }
   }
 
   // Update position and velocity
-  position += velocity * TIME_STEP;
-  velocity += acceleration * TIME_STEP;
+  position += velocity * constants.TIME_STEP;
+  velocity += acceleration * constants.TIME_STEP;
 
-  altitude = position - LUNAR_RADIUS;
+  altitude = position - constants.LUNAR_RADIUS;
 
   if (altitude <= 0){
-    if (velocity < KILL_VEL) {
+    if (velocity < constants.KILL_VEL) {
 
       blackboard.health = 0;
       statisticsMod.addCrash(blackboard);
-    } else if (velocity < WARN_VEL) {
+    } else if (velocity < constants.WARN_VEL) {
 
-      blackboard.health = 100 - (velocity - WARN_VEL / (KILL_VEL - WARN_VEL) * 100);
+      blackboard.health = 100 - (velocity - constants.WARN_VEL / (constants.KILL_VEL - constants.WARN_VEL) * 100);
     }
 
-    blackboard.state = GAME_END;
+    blackboard.state = constants.GAME_END;
     blackboard.endedLastTick = true;
-    position = LUNAR_RADIUS; velocity = 0; altitude = 0;
+    position = constants.LUNAR_RADIUS; velocity = 0; altitude = 0;
     statisticsMod.addLanding(blackboard);
   }
 
