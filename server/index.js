@@ -1,5 +1,6 @@
 // npm modules
 const WebSocket = require('ws');
+const sqlite = require('node:sqlite');
 
 const statisticsMod = require('./modules/statistics');
 const controlsMod = require('./modules/controls');
