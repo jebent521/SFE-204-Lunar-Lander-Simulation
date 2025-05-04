@@ -80,7 +80,12 @@ wss.on('connection', async function connection(socket) {
           blackboard = Blackboard.createFromDB(database, holder.sessionID);
           Blackboard.removeFromDB(database, sessionID);
           sessionID = holder.sessionID;
-          console.log('Reloading blackboard...')
+
+          // Don't immediately drop the player into flight!
+          if (blackboard.state === constants.PLAYING) {
+            blackboard.state = constants.PAUSED;
+            holder.isPaused = true;
+          }
           continue;
         }
 
@@ -209,14 +214,14 @@ function physicsMod(blackboard) {
 
   let altitude = position - constants.LUNAR_RADIUS;
 
-  if (altitude <= 0){
+  if (altitude <= 0) {
     if (velocity < constants.KILL_VEL) {
 
       blackboard.health = 0;
       statisticsMod.addCrash(blackboard);
     } else if (velocity < constants.WARN_VEL) {
 
-      blackboard.health = 100 - (velocity - constants.WARN_VEL / (constants.KILL_VEL - constants.WARN_VEL) * 100);
+      blackboard.health = 100 - (velocity - constants.WARN_VEL) / (constants.KILL_VEL - constants.WARN_VEL) * 100;
     }
 
     blackboard.state = constants.GAME_END;

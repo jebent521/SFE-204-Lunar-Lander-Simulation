@@ -247,7 +247,8 @@ function setupSocketHooks(ws) {
     });
     console.log("Disconnected from WebSocket server");
 
-    stopGame();
+    if (gameState === PLAYING)
+      pauseGame();
 
     // ...buuuut try to reconnect later if we can
     setTimeout(() => {
