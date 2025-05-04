@@ -240,7 +240,7 @@ function setupSocketHooks(ws) {
   ws.onclose = (_) => {
     // Log a message when disconnected from the WebSocket server
     isConnected = false;
-    document.getElementById("status").textContent = "Disconnected from the server. Try starting the server and refreshing the page.";
+    document.getElementById("status").textContent = "Disconnected from the server.";
     Array.from(document.getElementsByClassName("startPrompt")).forEach((element) => {
       element.style.color = "gray";
       element.style.opacity = "0.5";
