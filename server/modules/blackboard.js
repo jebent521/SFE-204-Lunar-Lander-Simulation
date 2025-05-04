@@ -42,9 +42,9 @@ export class Blackboard {
             ret.health = response[0].health;
             ret.state = response[0].state;
             ret.endedLastTick = response[0].endedLastTick === 1;
-        } else {
-            return ret;
         }
+
+        return ret;
     }
 
     static removeFromDB(db, sessionID) {

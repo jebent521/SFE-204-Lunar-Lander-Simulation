@@ -60,28 +60,24 @@ stars3.style.animation = 'animStar 120s linear infinite';
 
 const stars1clone = stars.cloneNode();
 stars1clone.style.animationDelay = "-5s";
-stars1clone.style.opacity = 100;
+stars1clone.style.opacity = "100";
 document.getElementById("AllStars").appendChild(stars1clone);
 
 const stars2clone = stars2.cloneNode();
 stars2clone.style.animationDelay = "-10s";
-stars2clone.style.opacity = 100;
+stars2clone.style.opacity = "100";
 document.getElementById("AllStars").appendChild(stars2clone);
 
 const stars3clone = stars3.cloneNode();
 stars3clone.style.animationDelay = "-15s";
-stars3clone.style.opacity = 100;
+stars3clone.style.opacity = "100";
 document.getElementById("AllStars").appendChild(stars3clone);
 
 
 const starAnimation = document.querySelectorAll(".starAnimation");
-for (var i = 0; i < starAnimation.length; i++) {
-  starAnimation[i].style.animationPlayState = 'running';
-}
-
 function setAnimate(value) {
-  for (var i = 0; i < starAnimation.length; i++) {
-    var style = starAnimation[i].style;
+  for (let i = 0; i < starAnimation.length; i++) {
+    let style = starAnimation[i].style;
     if (!value) {
       style.animationPlayState = 'paused';
       document.body.className = 'paused';
@@ -91,3 +87,5 @@ function setAnimate(value) {
     }
   }
 }
+
+setAnimate(false);

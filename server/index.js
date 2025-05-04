@@ -25,7 +25,6 @@ const wss = new WebSocketServer({ port: 8080 });
 
 wss.on('connection', async function connection(socket) {
   console.log('Client connected');
-  console.log(socket);
 
   let sessionID = crypto.randomUUID();
   let blackboard = new Blackboard();
@@ -77,8 +76,11 @@ wss.on('connection', async function connection(socket) {
         // If the sessionID is updated, the client is attempting to load a previous connection. Do that, clear the old
         // (now invalid) session, and immediately jump back to the start of the loop.
         if ((holder.sessionID !== undefined) && (holder.sessionID !== sessionID)) {
-          Blackboard.removeFromDB(database, sessionID);
+          console.log('Reloading blackboard...')
           blackboard = Blackboard.createFromDB(database, holder.sessionID);
+          Blackboard.removeFromDB(database, sessionID);
+          sessionID = holder.sessionID;
+          console.log('Reloading blackboard...')
           continue;
         }
 
