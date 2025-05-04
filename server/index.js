@@ -23,8 +23,9 @@ Blackboard.createTable(database);
 
 const wss = new WebSocketServer({ port: 8080 });
 
-wss.on('connection', async function connection(ws) {
+wss.on('connection', async function connection(socket) {
   console.log('Client connected');
+  console.log(socket);
 
   let sessionID = crypto.randomUUID();
   let blackboard = new Blackboard();
@@ -32,6 +33,7 @@ wss.on('connection', async function connection(ws) {
   // Holding variables. These may change many times per tick, 
   // but only get copied to the blackboard once per tick
   let holder = {
+    sessionID: sessionID,
     isBurning: false,
     disconnected: false,
     isPaused: false,
@@ -40,8 +42,8 @@ wss.on('connection', async function connection(ws) {
   };
 
   // Register events
-  ws.on('message', function incoming(message) {
-    let [k, v] = message.toString().split(",");
+  socket.on('message', function incoming(message) {
+    let [k, v] = message.toString().split(",", 2);
 
     if (v === 'true') { v = true; }
     else if (v === 'false') { v = false; }
@@ -50,16 +52,19 @@ wss.on('connection', async function connection(ws) {
     if (k in holder) { holder[k] = v }
     else {
       console.log(`Unknown message: ${message}`);
-      ws.send(`Unknown message: ${message}`);
+      socket.send(`Unknown message: ${message}`);
     }
   });
 
-  ws.on('close', function () {
+  socket.on('close', function () {
       console.log('Client disconnected');
       holder.disconnected = true;
   });
 
   // Now that there's a connection, start the server
+  // Send the session ID
+  socket.send(JSON.stringify({sessionID: sessionID}));
+
   let numTicks = 0;
   while (true) {
     // Tick start
@@ -67,8 +72,16 @@ wss.on('connection', async function connection(ws) {
 
     // Process state changes
     switch (blackboard.state) {
-      // If in the menu, move to playing and reset the blackboard once the weight has been recieved
+      // If in the menu, move to playing and reset the blackboard once the weight has been received
       case constants.MENU:
+        // If the sessionID is updated, the client is attempting to load a previous connection. Do that, clear the old
+        // (now invalid) session, and immediately jump back to the start of the loop.
+        if ((holder.sessionID !== undefined) && (holder.sessionID !== sessionID)) {
+          Blackboard.removeFromDB(database, sessionID);
+          blackboard = Blackboard.createFromDB(database, holder.sessionID);
+          continue;
+        }
+
         if (holder.fuelMass > 0 && holder.dryMass > 0) { 
           blackboard.position = 150 + constants.LUNAR_RADIUS;
           blackboard.velocity = 0;
@@ -100,7 +113,7 @@ wss.on('connection', async function connection(ws) {
             ? `${messages.VICTORY[Math.floor(Math.random() * messages.VICTORY.length)]}`
             : (blackboard.fuel_mass === 0) ? `You ${messages.NO_FUEL[Math.floor(Math.random() * messages.NO_FUEL.length)]}`
               : `You ${messages.DEATH[Math.floor(Math.random() * messages.DEATH.length)]}`;
-          ws.send(JSON.stringify({
+          socket.send(JSON.stringify({
             stats: statisticsMod.getCurrentStats(blackboard),
             message: message
           }));
@@ -114,7 +127,7 @@ wss.on('connection', async function connection(ws) {
 
           // Unlike other values, this is ping, not a state change.
           // The value doesn't matter
-          ws.send(JSON.stringify({endedLastTick:true}));
+          socket.send(JSON.stringify({endedLastTick:true}));
           
           blackboard.endedLastTick = false;
         }
@@ -130,7 +143,7 @@ wss.on('connection', async function connection(ws) {
     enforcerMod(blackboard);
 
     loggingMod(blackboard, numTicks, TIME_ACCELERATION);
-    communicationMod(blackboard, ws);
+    communicationMod(blackboard, sessionID, socket);
 
     blackboard.dumpToDB(database, sessionID);
 

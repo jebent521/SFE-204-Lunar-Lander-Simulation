@@ -6,6 +6,8 @@ let backgroundPlaying = false;
 
 // Create a WebSocket instance
 // and connect to the server
+const NO_SESSION = "NO_SESSION";
+let sessionID = NO_SESSION;
 const socket = new WebSocket("ws://localhost:8080");
 
 const pauseMenu = document.getElementById('pauseMenu');
@@ -17,8 +19,8 @@ const PLAYING = 'playing';
 const PAUSED = 'paused';
 const STOPPED = 'stopped';
 
-var gameState = NOT_STARTED;
-var isConnected = false;
+let gameState = NOT_STARTED;
+let isConnected = false;
 
 function stopGame() {
   startMenu.style.display = 'flex';
@@ -114,9 +116,9 @@ window.onload = () => {
         if (isConnected && startKeys.includes(code)) startGame();
         break;
       case PLAYING:
-        if (code == thrusterKey)
+        if (code === thrusterKey)
           socket.send('isBurning,true');
-        else if (code == pauseKey) pauseGame();
+        else if (code === pauseKey) pauseGame();
         break;
       case PAUSED:
         if (startKeys.includes(code)) unpauseGame();
@@ -151,6 +153,15 @@ socket.onmessage = (event) => {
   // Switch over the keys in the JSON object
   for (const key in data) {
     switch (key) {
+      case "sessionID":
+        if (sessionID === NO_SESSION) {
+          sessionID = data[key];
+          break;
+        }
+
+        // The server has attempted to change the session ID - remind them insistently of the correct one
+        socket.send('sessionID,' + sessionID);
+        break;
       case "altitude":
         const altitudeValue = data[key];
         const altitudeElem = document.getElementById("altitude");
