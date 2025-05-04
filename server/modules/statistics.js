@@ -1,24 +1,17 @@
 export function addAttempt(blackboard) {
-    if (blackboard.hasOwnProperty("attempts")) { blackboard.attempts += 1; }
-    else { blackboard.attempts = 1; }
+    blackboard.attempts += 1;
 }
 
 export function addLanding(blackboard) {
-    if (blackboard.hasOwnProperty("landings")) { blackboard.landings += 1; }
-    else { blackboard.landings = 1; }
+    blackboard.landings += 1;
 }
 
 export function addCrash(blackboard) {
-    if (blackboard.hasOwnProperty("crashes")) { blackboard.crashes += 1; }
-    else { blackboard.crashes = 1; }
+    blackboard.crashes += 1;
 }
 
 export function recordHighestAltitude(blackboard) {
-    let altitude = blackboard.altitude;
-    if (blackboard.hasOwnProperty("highestAltitude")) {
-        let highest = blackboard.highestAltitude;
-        if (altitude > highest) { blackboard.highestAltitude = altitude; }
-    } else { blackboard.highestAltitude = altitude; }
+    blackboard.highestAltitude = Math.max(blackboard.highestAltitude, blackboard.altitude);
 }
 
 export function getCurrentStats(blackboard) {

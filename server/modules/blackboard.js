@@ -10,6 +10,11 @@ export class Blackboard {
         this.health = 100;
         this.state = constants.MENU;
         this.endedLastTick = false;
+        this.attempts = 0;
+        this.landings = 0;
+        this.crashes = 0;
+        this.altitude = 150;
+        this.highestAltitude = this.altitude;
     }
 
     static createTable = function (db) {
@@ -23,7 +28,12 @@ export class Blackboard {
             isBurning INTEGER,
             health REAL,
             state TEXT,
-            endedLastTick INTEGER
+            endedLastTick INTEGER,
+            attempts INTEGER,
+            landings INTEGER,
+            crashes INTEGER,
+            altitude REAL,
+            highestAltitude REAL
         ) STRICT
         `);
     }
@@ -42,6 +52,11 @@ export class Blackboard {
             ret.health = response[0].health;
             ret.state = response[0].state;
             ret.endedLastTick = response[0].endedLastTick === 1;
+            ret.attempts = response[0].attempts;
+            ret.landings = response[0].landings;
+            ret.crashes = response[0].crashes;
+            ret.altitude = response[0].altitude;
+            ret.highestAltitude = response[0].highestAltitude;
         }
 
         return ret;
@@ -55,8 +70,10 @@ export class Blackboard {
     dumpToDB(database, id) {
         let insert = database.prepare(`
             INSERT OR REPLACE INTO data(sessionID, position, velocity, fuel_mass, dry_mass, isBurning, health, state,
-              endedLastTick)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        insert.run(id, this.position, this.velocity, this.fuel_mass, this.dry_mass, this.isBurning ? 1 : 0, this.health, this.state, this.endedLastTick ? 1 : 0);
+              endedLastTick, attempts, landings, crashes, altitude, highestAltitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        insert.run(id, this.position, this.velocity, this.fuel_mass, this.dry_mass, this.isBurning ? 1 : 0, this.health,
+            this.state, this.endedLastTick ? 1 : 0, this.attempts, this.landings, this.crashes, this.altitude,
+            this.highestAltitude);
     }
 }
