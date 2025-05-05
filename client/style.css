@@ -24,7 +24,7 @@ footer {
   right: 0;
   position: absolute;
   height: 8vh;
-  border-radius: 12;
+  border-radius: 12px;
 }
 
 footer::before {
@@ -50,6 +50,11 @@ footer::before {
   padding: 10px;
   float: left;
   width: 33.33%;
+}
+
+.startPrompt {
+  color: gray;
+  opacity: 50%;
 }
 
 /* Clear floats after the columns */
